@@ -4,7 +4,6 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-
 import { useEffect, useState } from "react";
 import { db } from "config/firebase";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
@@ -34,10 +33,8 @@ export default function PurchaseOrderTable() {
 
       const now = new Date();
       const todayDate = now.toDateString();
-
       const yesterdayDate = new Date();
       yesterdayDate.setDate(now.getDate() - 1);
-
       const month = now.getMonth();
       const year = now.getFullYear();
 
@@ -47,14 +44,12 @@ export default function PurchaseOrderTable() {
       let monthCount = 0;
 
       data.forEach((order) => {
-
         // Agar published field nahi hai to condition hata do
         if (order.published === false) {
           pendingCount++;
         }
 
         if (order.createdAt) {
-
           const date = order.createdAt.toDate();
 
           if (date.toDateString() === todayDate) {
@@ -73,12 +68,10 @@ export default function PurchaseOrderTable() {
           }
         }
       });
-
       setPending(pendingCount);
       setToday(todayCount);
       setYesterday(yesterdayCount);
       setThisMonth(monthCount);
-
     } catch (error) {
       console.log(error);
     }
@@ -86,18 +79,30 @@ export default function PurchaseOrderTable() {
 
   const handleSearch = (e) => {
     const value = e.target.value;
-
     setSearch(value);
-
     const filtered = orders.filter((order) =>
-      `${order.client || ""} ${order.po || ""} ${order.pid || ""} ${order.name || ""}`
+      `${order.clientName || ""} ${order.po || ""} ${order.pid || ""} ${order.stage || ""}`
         .toLowerCase()
         .includes(value.toLowerCase())
     );
-
     setFilteredOrders(filtered);
   };
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this Purchase Order?")) return;
 
+    try {
+      await deleteDoc(doc(db, "purchaseOrders", id));
+
+      toast.success("Purchase Order deleted successfully");
+
+      loadOrders();
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to delete Purchase Order");
+    }
+  };
+  
   useEffect(() => {
     loadOrders();
   }, []);
@@ -163,11 +168,13 @@ export default function PurchaseOrderTable() {
           <thead>
             <tr>
               <th>Image</th>
+              <th>PO #</th>
               <th>Client</th>
-              <th>PO#</th>
               <th>PID</th>
-              <th>Name</th>
-              <th>Date</th>
+              <th>Stage</th>
+              <th>Ship Date</th>
+              <th>Total Units</th>
+              <th>Grand Total</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -176,36 +183,31 @@ export default function PurchaseOrderTable() {
             {filteredOrders.map((order) => (
               <tr key={order.id}>
                 <td>
-                  {order.images && order.images.length > 0 ? (
+                  {order.products?.length > 0 &&
+                    (order.products[0].preview || order.products[0].image) ? (
                     <img
-                      src={order.images[0]}
-                      alt="PO"
+                      src={order.products[0].preview || order.products[0].image}
+                      alt="Product"
                       style={{
-                        width: "60px",
-                        height: "60px",
+                        width: 60,
+                        height: 60,
                         objectFit: "cover",
-                        borderRadius: "8px"
+                        borderRadius: 8
                       }}
                     />
                   ) : (
                     "No Image"
                   )}
                 </td>
-
-                <td>{order.client || "-"}</td>
-
-                <td>{order.po}</td>
-
-                <td>{order.pid}</td>
-
-                <td>{order.name}</td>
-
+                <td>{order.po || "-"}</td>
+                <td>{order.clientName || "-"}</td>
+                <td>{order.pid || "-"}</td>
+                <td>{order.stage || "-"}</td>
+                <td>{order.shipDate || "-"}</td>
+                <td>{order.totalUnits || 0}</td>
                 <td>
-                  {order.createdAt
-                    ? new Date(order.createdAt.seconds * 1000).toLocaleDateString()
-                    : "-"}
+                  ${Number(order.grandTotal || 0).toFixed(2)}
                 </td>
-
                 <td>
                   <Link
                     to={`/purchase-order/view/${order.id}`}
@@ -213,14 +215,12 @@ export default function PurchaseOrderTable() {
                   >
                     👁
                   </Link>
-
                   <Link
                     to={`/purchase-order/edit/${order.id}`}
                     className="btn btn-sm btn-primary me-2"
                   >
                     ✏
                   </Link>
-
                   <button
                     className="btn btn-sm btn-danger"
                     onClick={() => handleDelete(order.id)}

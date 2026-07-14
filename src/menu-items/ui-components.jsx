@@ -5,50 +5,50 @@ const uiComponents = {
   title: 'Ui Components',
   type: 'group',
   children: [
-    {
-      id: 'basic',
-      title: 'Procurement',
-      icon: 'ph ph-pencil-ruler',
-      type: 'collapse',
-      children: [
-        {
-          id: 'button',
-          title: 'Button',
-          type: 'item',
-          url: '/basic/buttons'
-        },
-        {
-          id: 'badges',
-          title: 'Badges',
-          type: 'item',
-          url: '/basic/badges'
-        },
-        {
-          id: 'breadcrumb',
-          title: 'Breadcrumb',
-          type: 'item',
-          url: '/basic/breadcrumb'
-        },
-        {
-          id: 'collapse',
-          title: 'Collapse',
-          type: 'item',
-          url: '/basic/collapse'
-        },
-        {
-          id: 'tabs-pills',
-          title: 'Tabs-pills',
-          type: 'item',
-          url: '/basic/tabs-pills'
-        },
-        {
-          id: 'typography',
-          title: 'Typography',
-          type: 'item',
-          url: '/basic/typography'
-        }
-      ]
-    }
+    // {
+    //   id: 'basic',
+    //   title: 'procurement',
+    //   icon: 'ph ph-pencil-ruler',
+    //   type: 'collapse',
+    //   children: [
+    //     {
+    //       id: 'button',
+    //       title: 'Button',
+    //       type: 'item',
+    //       url: '/basic/buttons'
+    //     },
+    //     {
+    //       id: 'badges',
+    //       title: 'Badges',
+    //       type: 'item',
+    //       url: '/basic/badges'
+    //     },
+    //     {
+    //       id: 'breadcrumb',
+    //       title: 'Breadcrumb',
+    //       type: 'item',
+    //       url: '/basic/breadcrumb'
+    //     },
+    //     {
+    //       id: 'collapse',
+    //       title: 'Collapse',
+    //       type: 'item',
+    //       url: '/basic/collapse'
+    //     },
+    //     {
+    //       id: 'tabs-pills',
+    //       title: 'Tabs-pills',
+    //       type: 'item',
+    //       url: '/basic/tabs-pills'
+    //     },
+    //     {
+    //       id: 'typography',
+    //       title: 'Typography',
+    //       type: 'item',
+    //       url: '/basic/typography'
+    //     }
+    //   ]
+    // }
   ]
 };
 

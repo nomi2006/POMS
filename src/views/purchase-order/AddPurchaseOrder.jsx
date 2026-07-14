@@ -25,8 +25,8 @@ export default function AddPurchaseOrder() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [clients, setClients] = useState([]);
-  const [images, setImages] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
+  // const [images, setImages] = useState([]);
+  // const [previewImages, setPreviewImages] = useState([]);
 
   const emptyProduct = {
     image: null,
@@ -81,7 +81,10 @@ export default function AddPurchaseOrder() {
 
   useEffect(() => {
     loadClients();
-  }, []);
+    if (id) {
+      loadPurchaseOrder();
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,6 +97,13 @@ export default function AddPurchaseOrder() {
   const handleProductChange = (index, field, value) => {
     const rows = [...products];
     rows[index][field] = value;
+    const qty12 = Number(rows[index].size12 || 0);
+    const qty18 = Number(rows[index].size18 || 0);
+    const qty24 = Number(rows[index].size24 || 0);
+    const totalUnits = qty12 + qty18 + qty24;
+    rows[index].totalUnits = totalUnits;
+    const cost = Number(rows[index].cost || 0);
+    rows[index].totalCost = (totalUnits * cost).toFixed(2);
     setProducts(rows);
   };
 
@@ -125,18 +135,30 @@ export default function AddPurchaseOrder() {
     return sum + Number(item.totalCost || 0);
   }, 0);
 
-  const uploadImages = async () => {
-    const urls = [];
-    for (const image of images) {
-      const imageRef = ref(
-        storage,
-        `purchaseOrders/${Date.now()}_${image.name}`
-      );
-      await uploadBytes(imageRef, image);
-      const url = await getDownloadURL(imageRef);
-      urls.push(url);
+  const uploadProductImages = async () => {
+    const updatedProducts = [];
+
+    for (const product of products) {
+      let imageUrl = product.preview || "";
+
+      if (product.image instanceof File) {
+        const imageRef = ref(
+          storage,
+          `purchaseOrders/${Date.now()}_${product.image.name}`
+        );
+
+        await uploadBytes(imageRef, product.image);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      updatedProducts.push({
+        ...product,
+        image: imageUrl,
+        preview: imageUrl
+      });
     }
-    return urls;
+
+    return updatedProducts;
   };
 
   const loadClients = async () => {
@@ -152,16 +174,51 @@ export default function AddPurchaseOrder() {
     }
   };
 
+  const loadPurchaseOrder = async () => {
+    try {
+      const docRef = doc(db, "purchaseOrders", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+
+        setFormData({
+          ...formData,
+          ...data
+        });
+
+        if (data.products && data.products.length > 0) {
+          setProducts(
+            data.products.map((product) => ({
+              ...product,
+              preview: product.image || "",
+              image: product.image || ""
+            }))
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load Purchase Order");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const imageUrls = await uploadImages();
+      const uploadedProducts = await uploadProductImages();
+      const selectedClient = clients.find(
+        (client) => client.id === formData.clientId
+      );
       const data = {
         ...formData,
-        products: products,
-        images: imageUrls
+        clientName: selectedClient?.name || "",
+        products: uploadedProducts,
+        totalProducts,
+        totalUnits,
+        grandTotal,
+        updatedAt: new Date()
       };
-
       if (id) {
         await updateDoc(doc(db, "purchaseOrders", id), data);
         toast.success("Purchase Order Updated Successfully");
@@ -172,7 +229,6 @@ export default function AddPurchaseOrder() {
         });
         toast.success("Purchase Order Added Successfully");
       }
-
       navigate("/purchase-order/list");
     } catch (error) {
       console.error(error);
@@ -195,86 +251,85 @@ export default function AddPurchaseOrder() {
         {/* ROW 1: SELECT CLIENT + PO DETAILS */}
         <Row className="mb-4 g-3">
           {/* SELECT CLIENT + SHIP TO */}
-<Col lg={5}>
-  <Card className="border-2 shadow-sm h-100">
-    <Card.Header className="bg-light border-bottom-2 py-2">
-      <h6 className="mb-0 fw-bold text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>
-        SELECT CLIENT
-      </h6>
-    </Card.Header>
-    <Card.Body className="p-3 h-100">
+          <Col lg={5}>
+            <Card className="border-2 shadow-sm h-100">
+              <Card.Header className="bg-light border-bottom-2 py-2">
+                <h6 className="mb-0 fw-bold text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>
+                  SELECT CLIENT
+                </h6>
+              </Card.Header>
+              <Card.Body className="p-3 h-100">
 
-      {/* EXISTING CLIENT */}
-      <Form.Group className="mb-3">
-        <Form.Label className="small fw-bold text-uppercase text-muted" style={{ fontSize: "0.75rem" }}>
-          Existing Client
-        </Form.Label>
-        <Form.Select
-          name="clientId"
-          value={formData.clientId}
-          onChange={handleChange}
-          className="border-1"
-          style={{ borderRadius: "8px" }}
-        >
-          <option value="">Select Client</option>
-          {clients.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.name}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
+                {/* EXISTING CLIENT */}
+                <Form.Group className="mb-3">
+                  <Form.Label className="small fw-bold text-uppercase text-muted" style={{ fontSize: "0.75rem" }}>
+                    Existing Client
+                  </Form.Label>
+                  <Form.Select
+                    name="clientId"
+                    value={formData.clientId}
+                    onChange={handleChange}
+                    className="border-1"
+                    style={{ borderRadius: "8px" }}
+                  >
+                    <option value="">Select Client</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
 
-      {/* ADD NEW CLIENT BUTTON */}
-      <Button
-        variant="outline-primary"
-        size="sm"
-        onClick={() => navigate("/client/add")}
-        className="w-100 mb-3"
-      >
-        + Add New Client
-      </Button>
+                {/* ADD NEW CLIENT BUTTON */}
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => navigate("/client/add")}
+                  className="w-100 mb-3"
+                >
+                  + Add New Client
+                </Button>
+                <hr className="my-3" />
 
-      <hr className="my-3" />
+                {/* SHIP TO - Yaha shift kar diya */}
+                <Form.Group>
+                  <Form.Label className="small fw-bold text-uppercase text-muted" style={{ fontSize: "0.75rem" }}>
+                    Shipping Address
+                  </Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={2}
+                    name="shipAddress"
+                    value={formData.shipAddress}
+                    onChange={handleChange}
+                    placeholder="Enter complete address..."
+                    style={{
+                      resize: "none",
+                      borderRadius: "10px",
+                      border: "1.5px solid #d6dbe1",
+                      padding: "10px 12px",
+                      fontSize: "14px",
+                      lineHeight: "1.6",
+                      background: "#fff",
+                      transition: "all.25s ease",
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#0d6efd";
+                      e.target.style.boxShadow = "0 0 0 0.15rem rgba(13,110,253,.15)";
+                      e.target.style.background = "#fff";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "#d6dbe1";
+                      e.target.style.boxShadow = "none";
+                      e.target.style.background = "#d6dbe1";
+                    }}
+                  />
+                </Form.Group>
 
-      {/* SHIP TO - Yaha shift kar diya */}
-      <Form.Group>
-        <Form.Label className="small fw-bold text-uppercase text-muted" style={{ fontSize: "0.75rem" }}>
-          Shipping Address
-        </Form.Label>
-        <Form.Control
-          as="textarea"
-          rows={2}
-          name="shipAddress"
-          value={formData.shipAddress}
-          onChange={handleChange}
-          placeholder="Enter complete address..."
-          style={{
-            resize: "none",
-            borderRadius: "10px",
-            border: "1.5px solid #d6dbe1",
-            padding: "10px 12px",
-            fontSize: "14px",
-            lineHeight: "1.6",
-            background: "#fff",
-            transition: "all.25s ease",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "#0d6efd";
-            e.target.style.boxShadow = "0 0 0 0.15rem rgba(13,110,253,.15)";
-            e.target.style.background = "#fff";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "#d6dbe1";
-            e.target.style.boxShadow = "none";
-            e.target.style.background = "#d6dbe1";
-          }}
-        />
-      </Form.Group>
-
-    </Card.Body>
-  </Card>
-</Col>
+              </Card.Body>
+            </Card>
+          </Col>
           {/* PO DETAILS */}
           <Col lg={7}>
             <Card className="border-2 shadow-sm h-100">
@@ -447,96 +502,105 @@ export default function AddPurchaseOrder() {
         </Row>
 
         <Card className="border-2 shadow-sm mb-4">
-  <Card.Header className="bg-light border-bottom-2 py-3 d-flex justify-content-between align-items-center">
-    <h6 className="mb-0 fw-bold text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>
-      PRODUCTS / ITEMS
-    </h6>
-    <Button type="button" size="sm" variant="primary" onClick={addRow} className="px-3" style={{ fontSize: "0.9rem", fontWeight: "600" }}>
-      + Add Product
-    </Button>
-  </Card.Header>
-  <Card.Body className="p-0">
-    <div className="table-responsive">
-      <Table borderless className="mb-0" style={{ fontSize: "0.85rem" }}>
-        <thead>
-          <tr className="border-top border-bottom" style={{ backgroundColor: "#d9dcdf" }}>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>IMAGE</th>
-            <th className="px-2 py-2 fw-bold align-middle" style={{ minWidth: "120px" }}>STYLE</th>
-            <th className="px-2 py-2 fw-bold align-middle" style={{ minWidth: "130px" }}>SHIP DATE</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "70px" }}>PPK</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>12M</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>18M</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>24M</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "80px" }}>PER CTN</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>TOTAL UNITS</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>COST</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "110px" }}>TOTAL COST</th>
-            <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "70px" }}>ACTION</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((item, index) => (
-            <tr key={index} className="border-bottom" style={{ backgroundColor: index % 2 === 0? "#fff" : "#f9f9f9" }}>
-              {/* IMAGE */}
-              <td className="px-2 py-2 text-center align-middle">
-                <div className="d-flex flex-column align-items-center gap-1">
-                  {item.preview? (
-                    <img src={item.preview} alt="preview" style={{ width: "60px", height: "60px", objectFit: "cover", border: "1px solid #ddd", borderRadius: "4px" }} />
-                  ) : (
-                    <div style={{ width: "60px", height: "60px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px dashed #ddd", borderRadius: "4px", backgroundColor: "#f8f9fa", fontSize: "0.7rem", color: "#999" }}>
-                      No Image
-                    </div>
-                  )}
-                  <Form.Control type="file" accept="image/*" size="sm" onChange={(e) => handleProductImage(index, e.target.files[0])} style={{ fontSize: "0.7rem", padding: "2px 4px", width: "85px" }} />
-                </div>
-              </td>
+          <Card.Header className="bg-light border-bottom-2 py-3 d-flex justify-content-between align-items-center">
+            <h6 className="mb-0 fw-bold text-uppercase" style={{ fontSize: "0.85rem", letterSpacing: "1px" }}>
+              PRODUCTS / ITEMS
+            </h6>
+            <Button type="button" size="sm" variant="primary" onClick={addRow} className="px-3" style={{ fontSize: "0.9rem", fontWeight: "600" }}>
+              + Add Product
+            </Button>
+          </Card.Header>
+          <Card.Body className="p-0">
+            <div className="table-responsive">
+              <Table borderless className="mb-0" style={{ fontSize: "0.85rem" }}>
+                <thead>
+                  <tr className="border-top border-bottom" style={{ backgroundColor: "#d9dcdf" }}>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>IMAGE</th>
+                    <th className="px-2 py-2 fw-bold align-middle" style={{ minWidth: "120px" }}>STYLE</th>
+                    <th className="px-2 py-2 fw-bold align-middle" style={{ minWidth: "130px" }}>SHIP DATE</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "70px" }}>PPK</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>12M</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>18M</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "60px" }}>24M</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "80px" }}>PER CTN</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>TOTAL UNITS</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "90px" }}>COST</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "110px" }}>TOTAL COST</th>
+                    <th className="px-2 py-2 text-center fw-bold align-middle" style={{ width: "70px" }}>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((item, index) => (
+                    <tr key={index} className="border-bottom" style={{ backgroundColor: index % 2 === 0 ? "#fff" : "#f9f9f9" }}>
+                      {/* IMAGE */}
+                      <td className="px-2 py-2 text-center align-middle">
+                        <div className="d-flex flex-column align-items-center gap-1">
+                          {item.preview ? (
+                            <img src={item.preview || item.image} alt="preview" style={{ width: "60px", height: "60px", objectFit: "cover", border: "1px solid #ddd", borderRadius: "4px" }} />
+                          ) : (
+                            <div style={{ width: "60px", height: "60px", display: "flex", alignItems: "center", justifyContent: "center", border: "1px dashed #ddd", borderRadius: "4px", backgroundColor: "#f8f9fa", fontSize: "0.7rem", color: "#999" }}>
+                              No Image
+                            </div>
+                          )}
+                          <Form.Control type="file" accept="image/*" size="sm" onChange={(e) => handleProductImage(index, e.target.files[0])} style={{ fontSize: "0.7rem", padding: "2px 4px", width: "85px" }} />
+                        </div>
+                      </td>
 
-              {/* STYLE */}
-              <td className="px-2 py-2 align-middle">
-                <Form.Control size="sm" value={item.style} onChange={(e) => handleProductChange(index, "style", e.target.value)} placeholder="Style #" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 8px" }} />
-              </td>
+                      {/* STYLE */}
+                      <td className="px-2 py-2 align-middle">
+                        <Form.Control size="sm" value={item.style} onChange={(e) => handleProductChange(index, "style", e.target.value)} placeholder="Style #" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 8px" }} />
+                      </td>
 
-              {/* SHIP DATE */}
-              <td className="px-2 py-2 align-middle">
-                <Form.Control size="sm" type="date" value={item.shipDate} onChange={(e) => handleProductChange(index, "shipDate", e.target.value)} style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 8px" }} />
-              </td>
+                      {/* SHIP DATE */}
+                      <td className="px-2 py-2 align-middle">
+                        <Form.Control size="sm" type="date" value={item.shipDate} onChange={(e) => handleProductChange(index, "shipDate", e.target.value)} style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 8px" }} />
+                      </td>
 
-              {/* PPK, 12M, 18M, 24M, PER CTN */}
-              {["ppk", "size12", "size18", "size24", "perCtn"].map(field => (
-                <td key={field} className="px-2 py-2 align-middle">
-                  <Form.Control size="sm" type="number" value={item[field]} onChange={(e) => handleProductChange(index, field, e.target.value)} className="text-center" placeholder="0" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 4px" }} />
-                </td>
-              ))}
+                      {/* PPK, 12M, 18M, 24M, PER CTN */}
+                      {["ppk", "size12", "size18", "size24", "perCtn"].map(field => (
+                        <td key={field} className="px-2 py-2 align-middle">
+                          <Form.Control size="sm" type="number" value={item[field]} onChange={(e) => handleProductChange(index, field, e.target.value)} className="text-center" placeholder="0" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 4px" }} />
+                        </td>
+                      ))}
 
-              {/* TOTAL UNITS */}
-              <td className="px-2 py-2 align-middle">
-                <Form.Control size="sm" type="number" value={item.totalUnits} readOnly className="text-center fw-bold" style={{ height: "36px", width: "100%", fontSize: "0.85rem", backgroundColor: "#f8f9fa", padding: "6px 4px" }} />
-              </td>
+                      {/* TOTAL UNITS */}
+                      <td className="px-2 py-2 align-middle">
+                        <Form.Control
+                          size="sm"
+                          type="number"
+                          value={item.totalUnits}
+                          readOnly
+                          className="text-center fw-bold" style={{ height: "36px", width: "100%", fontSize: "0.85rem", backgroundColor: "#f8f9fa", padding: "6px 4px" }} />
+                      </td>
 
-              {/* COST */}
-              <td className="px-2 py-2 align-middle">
-                <Form.Control size="sm" type="number" step="0.01" value={item.cost} onChange={(e) => handleProductChange(index, "cost", e.target.value)} className="text-center" placeholder="0.00" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 4px" }} />
-              </td>
+                      {/* COST */}
+                      <td className="px-2 py-2 align-middle">
+                        <Form.Control size="sm" type="number" step="0.01" value={item.cost} onChange={(e) => handleProductChange(index, "cost", e.target.value)} className="text-center" placeholder="0.00" style={{ height: "36px", width: "100%", fontSize: "0.85rem", padding: "6px 4px" }} />
+                      </td>
 
-              {/* TOTAL COST */}
-              <td className="px-2 py-2 align-middle">
-                <Form.Control size="sm" type="number" value={item.totalCost} readOnly className="text-center fw-bold" style={{ height: "36px", width: "100%", fontSize: "0.85rem", backgroundColor: "#e7f3ff", color: "#0c63e4", padding: "6px 4px" }} />
-              </td>
+                      {/* TOTAL COST */}
+                      <td className="px-2 py-2 align-middle">
+                        <Form.Control
+                          size="sm"
+                          type="number"
+                          value={item.totalCost}
+                          readOnly className="text-center fw-bold" style={{ height: "36px", width: "100%", fontSize: "0.85rem", backgroundColor: "#e7f3ff", color: "#0c63e4", padding: "6px 4px" }} />
+                      </td>
 
-              {/* ACTION */}
-              <td className="px-2 py-2 text-center align-middle">
-                <div className="d-flex gap-1 justify-content-center">
-                  <Button type="button" size="sm" variant="success" onClick={addRow} style={{ minWidth: "28px", height: "28px", padding: "0", fontSize: "0.9rem" }}>+</Button>
-                  <Button type="button" size="sm" variant="danger" onClick={() => removeRow(index)} style={{ minWidth: "28px", height: "28px", padding: "0", fontSize: "0.9rem" }}>−</Button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
-  </Card.Body>
-</Card>
+                      {/* ACTION */}
+                      <td className="px-2 py-2 text-center align-middle">
+                        <div className="d-flex gap-1 justify-content-center">
+                          <Button type="button" size="sm" variant="success" onClick={addRow} style={{ minWidth: "28px", height: "28px", padding: "0", fontSize: "0.9rem" }}>+</Button>
+                          <Button type="button" size="sm" variant="danger" onClick={() => removeRow(index)} style={{ minWidth: "28px", height: "28px", padding: "0", fontSize: "0.9rem" }}>−</Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Card.Body>
+        </Card>
 
         {/* SUMMARY + BUTTONS */}
         <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 mb-4">

@@ -7,11 +7,12 @@ import uiComponents from './ui-components';
 import tableRoutes from './tables';
 import navigation from './navigation';
 import purchaseOrder from './purchase-order';
+import procurement from './procurement'; // Import the procurement menu items
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-  items: [ navigation,purchaseOrder,uiComponents,formComponents,tableRoutes,chartsMaps,pages,other]
+  items: [ navigation,purchaseOrder,procurement,uiComponents,formComponents,tableRoutes,chartsMaps,pages,other]
 };
 
 export default menuItems;
