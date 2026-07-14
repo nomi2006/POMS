@@ -7,7 +7,7 @@ import uiComponents from './ui-components';
 import tableRoutes from './tables';
 import navigation from './navigation';
 import purchaseOrder from './purchase-order';
-import procurement from './procurement'; // Import the procurement menu items
+import procurement from './procurement';
 
 // ==============================|| MENU ITEMS ||============================== //
 

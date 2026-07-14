@@ -9,6 +9,7 @@ import TablesRoutes from './TablesRoutes';
 import PurchaseOrderRoutes from './PurchaseOrderRoutes';
 import YarnPurchaseRoutes from './YarnPurchaseRoutes';
 import AccessoriesPurchaseRoutes from './AccessoriesPurchaseRoutes';
+import DyingKnittingRoutes from './DyingKnittingRoutes'; 
 
 const router = createBrowserRouter(
   [
@@ -19,6 +20,7 @@ const router = createBrowserRouter(
     PurchaseOrderRoutes,
     YarnPurchaseRoutes,
     AccessoriesPurchaseRoutes, 
+    DyingKnittingRoutes,
     PagesRoutes,
     OtherRoutes,
     ChartMapRoutes
