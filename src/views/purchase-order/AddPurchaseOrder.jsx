@@ -87,7 +87,7 @@ export default function AddPurchaseOrder() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // ✅ Agar newClientName change ho raha hai toh state update karein
     if (name === "newClientName") {
       setNewClientName(value);
@@ -211,10 +211,41 @@ export default function AddPurchaseOrder() {
       toast.error("Failed to load Purchase Order");
     }
   };
-
-  // ✅ FIXED handleSubmit
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🔵 Form Submitted!");
+
+    // ✅ VALIDATION 1: PO Number Required
+    if (!formData.po || formData.po.trim() === "") {
+      toast.error("Please enter PO Number");
+      console.log("❌ Validation Failed: PO Number missing");
+      return;
+    }
+
+    // ✅ VALIDATION 2: Client Required
+    if (!formData.clientId && (!newClientName || newClientName.trim() === "")) {
+      toast.error("Please select a client or add new client");
+      console.log("❌ Validation Failed: Client missing");
+      return;
+    }
+
+    // ✅ VALIDATION 3: At least one product required
+    const hasValidProduct = products.some(item =>
+      item.style ||
+      item.size12 ||
+      item.size18 ||
+      item.size24 ||
+      item.cost
+    );
+
+    if (!hasValidProduct) {
+      toast.error("Please add at least one product with valid data");
+      console.log("❌ Validation Failed: No products");
+      return;
+    }
+
+    console.log("✅ All Validations Passed!");
+
     try {
       const uploadedProducts = await uploadProductImages();
 
@@ -233,11 +264,11 @@ export default function AddPurchaseOrder() {
         clientName = selectedClient?.name || "";
         console.log("Existing Client Name:", clientName);
       }
-      // ✅ Agar new client manually likha hai - state se lein
+      // Agar new client manually likha hai - state se lein
       else if (newClientName && newClientName.trim() !== "") {
         clientName = newClientName.trim();
 
-        // ✅ New client ko clients collection mein save karein
+        // New client ko clients collection mein save karein
         const newClientRef = await addDoc(collection(db, "clients"), {
           name: clientName,
           createdAt: new Date().toISOString(),
@@ -249,7 +280,7 @@ export default function AddPurchaseOrder() {
         toast.success("New Client Added Successfully!");
       }
 
-      // ✅ FINAL DATA
+      // FINAL DATA
       const data = {
         ...formData,
         clientId: clientId,
@@ -279,7 +310,6 @@ export default function AddPurchaseOrder() {
       toast.error(error.message);
     }
   };
-
   return (
     <div className="container-fluid p-4">
       {/* HEADER */}
@@ -659,7 +689,7 @@ export default function AddPurchaseOrder() {
           </div>
           <div className="d-flex gap-2">
             <Button type="button" variant="outline-secondary" onClick={() => navigate("/purchase-order/list")}>Cancel</Button>
-            <Button type="submit" variant="primary" className="px-4">Save Purchase Order</Button>
+            <Button type="submit" variant="primary" className="px-4" onClick={() => console.log("🟢 Button Clicked!")}fir >Save Purchase Order</Button>
           </div>
         </div>
       </form>
