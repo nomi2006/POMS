@@ -10,6 +10,7 @@ import PurchaseOrderRoutes from './PurchaseOrderRoutes';
 import YarnPurchaseRoutes from './YarnPurchaseRoutes';
 import AccessoriesPurchaseRoutes from './AccessoriesPurchaseRoutes';
 import DyingKnittingRoutes from './DyingKnittingRoutes'; 
+import EmbroideryRoutes from './EmbroideryRoutes';
 
 const router = createBrowserRouter(
   [
@@ -21,6 +22,7 @@ const router = createBrowserRouter(
     YarnPurchaseRoutes,
     AccessoriesPurchaseRoutes, 
     DyingKnittingRoutes,
+    EmbroideryRoutes,
     PagesRoutes,
     OtherRoutes,
     ChartMapRoutes
