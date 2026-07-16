@@ -72,13 +72,15 @@ export default function KnittingSent() {
     const [tableItems, setTableItems] = useState([{ ...emptyItem }]);
 
     // ---------- LOAD PO NUMBERS ----------
+    // PO List Load with totalUnits
     const loadPONumbers = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, "purchaseOrders"));
             const data = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 po: doc.data().po || "",
-                clientName: doc.data().clientName || ""
+                clientName: doc.data().clientName || "",
+                totalUnits: doc.data().totalUnits || 0  // ✅ Total Units
             }));
             setPoList(data);
         } catch (error) {
@@ -153,7 +155,6 @@ export default function KnittingSent() {
         rows[index][field] = value;
         setTableItems(rows);
     };
-
     const handleColorSelect = (index, color) => {
         const rows = [...tableItems];
         rows[index].color = color.code;
@@ -276,7 +277,11 @@ export default function KnittingSent() {
                                                 className="px-3 py-2 border-bottom"
                                                 style={{ cursor: "pointer" }}
                                                 onMouseDown={() => {
-                                                    setFormData(prev => ({ ...prev, poNumber: po.po }));
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        poNumber: po.po,
+                                                        quantity: po.totalUnits || "" 
+                                                    }));
                                                     setShowPoDropdown(false);
                                                 }}
                                             >
@@ -478,15 +483,42 @@ export default function KnittingSent() {
 
                                             {/* ACTION */}
                                             <td className="px-2 py-2 text-center align-middle">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant="danger"
-                                                    onClick={() => removeRow(index)}
-                                                    style={{ minWidth: "28px", height: "28px", padding: "0", fontSize: "0.9rem" }}
-                                                >
-                                                    −
-                                                </Button>
+                                                <div className="d-flex gap-1 justify-content-center">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="success"
+                                                        onClick={addRow}
+                                                        style={{
+                                                            width: "30px",
+                                                            height: "30px",
+                                                            padding: "0",
+                                                            fontSize: "1rem",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center"
+                                                        }}
+                                                    >
+                                                        +
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant="danger"
+                                                        onClick={() => removeRow(index)}
+                                                        style={{
+                                                            width: "30px",
+                                                            height: "30px",
+                                                            padding: "0",
+                                                            fontSize: "1rem",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center"
+                                                        }}
+                                                    >
+                                                        −
+                                                    </Button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

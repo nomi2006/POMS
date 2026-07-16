@@ -25,13 +25,41 @@ export default function DyingReceived() {
     try {
       setLoading(true);
       const querySnapshot = await getDocs(collection(db, "dyingSent"));
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      console.log("Loaded data:", data);
+      
+      const data = querySnapshot.docs.map((doc) => {
+        const docData = doc.data();
+        
+        let style = "-", color = "#ddd", colorName = "-", qty = "-", date = "-";
+        
+        if (docData.tableItems && docData.tableItems.length > 0) {
+          const item = docData.tableItems[0];
+          style = item.style || "-";
+          color = item.color || "#ddd";
+          colorName = item.colorName || item.color || "-";
+          qty = item.qtyRequired || item.quantity || "-";
+          date = item.date || "-";
+        } else {
+          style = docData.style || "-";
+          color = docData.color || "#ddd";
+          colorName = docData.colorName || docData.color || "-";
+          qty = docData.quantity || docData.qtyRequired || "-";
+          date = docData.date || "-";
+        }
+        
+        return {
+          id: doc.id,
+          style: style,
+          color: color,
+          colorName: colorName,
+          quantity: qty,
+          date: date
+        };
+      });
+      
+      console.log("Final Processed Data:", data);
       setData(data);
       setFiltered(data);
+      
     } catch (error) {
       console.error("Error loading:", error);
       toast.error("Failed to load data");
@@ -57,8 +85,7 @@ export default function DyingReceived() {
     setSearch(value);
     const filteredData = data.filter((item) =>
       item.style?.toLowerCase().includes(value) ||
-      item.colorName?.toLowerCase().includes(value) ||
-      item.poNumber?.toLowerCase().includes(value)
+      item.colorName?.toLowerCase().includes(value)
     );
     setFiltered(filteredData);
   };
@@ -71,7 +98,7 @@ export default function DyingReceived() {
           <div className="d-flex gap-2 w-100 w-md-auto">
             <Form.Control
               type="text"
-              placeholder="Search by Style, Color, PO..."
+              placeholder="Search by Style, Color..."
               value={search}
               onChange={handleSearch}
               className="border-1"
@@ -113,11 +140,11 @@ export default function DyingReceived() {
                           <span 
                             className="d-inline-block me-1" 
                             style={{ 
-                              width: "15px", 
-                              height: "15px", 
+                              width: "18px", 
+                              height: "18px", 
                               backgroundColor: item.color || "#ddd", 
                               borderRadius: "50%", 
-                              border: "1px solid #ddd",
+                              border: "2px solid #ccc",
                               display: "inline-block",
                               verticalAlign: "middle"
                             }}

@@ -78,7 +78,8 @@ export default function DyingSent() {
             const data = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
                 po: doc.data().po || "",
-                clientName: doc.data().clientName || ""
+                clientName: doc.data().clientName || "",
+                totalUnits: doc.data().totalUnits || 0
             }));
             setPoList(data);
         } catch (error) {
@@ -274,7 +275,11 @@ export default function DyingSent() {
                                                 className="px-3 py-2 border-bottom"
                                                 style={{ cursor: "pointer" }}
                                                 onMouseDown={() => {
-                                                    setFormData(prev => ({ ...prev, poNumber: po.po }));
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        poNumber: po.po,
+                                                        quantity: po.totalUnits || ""  // ✅ Total Units auto-fill
+                                                    }));
                                                     setShowPoDropdown(false);
                                                 }}
                                             >
@@ -341,9 +346,13 @@ export default function DyingSent() {
                                 name="quantity"
                                 value={formData.quantity}
                                 onChange={handleChange}
-                                placeholder="Enter Quantity"
+                                placeholder="Auto-filled from PO"
                                 required
+                                style={{ backgroundColor: "#f8f9fa" }}
                             />
+                            <Form.Text className="text-muted">
+                                Auto-filled from PO Total Units
+                            </Form.Text>
                         </Form.Group>
                     </Col>
                 </Row>
@@ -391,8 +400,6 @@ export default function DyingSent() {
                                                     ))}
                                                 </Form.Select>
                                             </td>
-
-                                            {/* COLOR - Dropdown with color preview */}
                                             {/* COLOR - Dropdown */}
                                             <td className="px-2 py-2 align-middle">
                                                 <Form.Select
@@ -411,7 +418,6 @@ export default function DyingSent() {
                                                     ))}
                                                 </Form.Select>
                                             </td>
-
                                             {/* QTY REQUIRED */}
                                             <td className="px-2 py-2 align-middle">
                                                 <Form.Control
