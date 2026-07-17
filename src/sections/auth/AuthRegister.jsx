@@ -31,6 +31,7 @@ import DarkLogo from 'assets/images/logo-dark.svg';
 
 export default function AuthRegisterForm({ className, link }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const {
     register,
@@ -38,14 +39,18 @@ export default function AuthRegisterForm({ className, link }) {
     reset,
     formState: { errors },
     setError,
-    clearErrors
+    clearErrors,
+    watch
   } = useForm();
+
+  const password = watch("password");
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
 
   const onSubmit = async (data) => {
+    // ✅ Check if passwords match
     if (data.password !== data.confirmPassword) {
       setError("confirmPassword", {
         type: "manual",
@@ -57,6 +62,7 @@ export default function AuthRegisterForm({ className, link }) {
     clearErrors("confirmPassword");
 
     try {
+      setLoading(true);
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
@@ -67,17 +73,33 @@ export default function AuthRegisterForm({ className, link }) {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        createdAt: new Date()
+        createdAt: new Date().toISOString()
       });
 
-      toast.success("Registration Successful");
-
+      toast.success("Registration Successful! Please login.");
       reset();
-
       navigate("/login");
 
     } catch (error) {
-      toast.error(error.message);
+      console.error("Registration error:", error);
+      
+      if (error.code === "auth/email-already-in-use") {
+        setError("email", {
+          type: "manual",
+          message: "Email already in use"
+        });
+        toast.error("Email already in use");
+      } else if (error.code === "auth/weak-password") {
+        setError("password", {
+          type: "manual",
+          message: "Password is too weak"
+        });
+        toast.error("Password is too weak");
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,6 +112,7 @@ export default function AuthRegisterForm({ className, link }) {
       </div>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <h4 className={`text-center f-w-500 mt-4 mb-3 ${className}`}>Sign up</h4>
+        
         <Row>
           <Col sm={6}>
             <Form.Group className="mb-3" controlId="formFirstName">
@@ -99,6 +122,10 @@ export default function AuthRegisterForm({ className, link }) {
                 {...register('firstName', firstNameSchema)}
                 isInvalid={!!errors.firstName}
                 className={className && 'bg-transparent border-white text-white border-opacity-25 '}
+                style={{
+                  borderColor: errors.firstName ? '#dc3545' : '',
+                  boxShadow: errors.firstName ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
+                }}
               />
               <Form.Control.Feedback type="invalid">{errors.firstName?.message}</Form.Control.Feedback>
             </Form.Group>
@@ -109,13 +136,18 @@ export default function AuthRegisterForm({ className, link }) {
                 type="text"
                 placeholder="Last Name"
                 {...register('lastName', lastNameSchema)}
-                isInvalid={!!errors.email}
+                isInvalid={!!errors.lastName}
                 className={className && 'bg-transparent border-white text-white border-opacity-25 '}
+                style={{
+                  borderColor: errors.lastName ? '#dc3545' : '',
+                  boxShadow: errors.lastName ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
+                }}
               />
               <Form.Control.Feedback type="invalid">{errors.lastName?.message}</Form.Control.Feedback>
             </Form.Group>
           </Col>
         </Row>
+
         <Form.Group className="mb-3" controlId="formEmail">
           <Form.Control
             type="email"
@@ -123,9 +155,14 @@ export default function AuthRegisterForm({ className, link }) {
             {...register('email', emailSchema)}
             isInvalid={!!errors.email}
             className={className && 'bg-transparent border-white text-white border-opacity-25 '}
+            style={{
+              borderColor: errors.email ? '#dc3545' : '',
+              boxShadow: errors.email ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
+            }}
           />
           <Form.Control.Feedback type="invalid">{errors.email?.message}</Form.Control.Feedback>
         </Form.Group>
+
         <Form.Group className="mb-3" controlId="formPassword">
           <InputGroup>
             <Form.Control
@@ -134,6 +171,10 @@ export default function AuthRegisterForm({ className, link }) {
               {...register('password', passwordSchema)}
               isInvalid={!!errors.password}
               className={className && 'bg-transparent border-white text-white border-opacity-25 '}
+              style={{
+                borderColor: errors.password ? '#dc3545' : '',
+                boxShadow: errors.password ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
+              }}
             />
             <Button onClick={togglePasswordVisibility}>
               {showPassword ? <i className="ti ti-eye" /> : <i className="ti ti-eye-off" />}
@@ -141,16 +182,25 @@ export default function AuthRegisterForm({ className, link }) {
             <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
           </InputGroup>
         </Form.Group>
+
         <Form.Group className="mb-3" controlId="formConfirmPassword">
           <Form.Control
             type="password"
             placeholder="Confirm Password"
-            {...register('confirmPassword', confirmPasswordSchema)}
+            {...register('confirmPassword', {
+              ...confirmPasswordSchema,
+              validate: value => value === password || "Passwords do not match"
+            })}
             isInvalid={!!errors.confirmPassword}
             className={className && 'bg-transparent border-white text-white border-opacity-25 '}
+            style={{
+              borderColor: errors.confirmPassword ? '#dc3545' : '',
+              boxShadow: errors.confirmPassword ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
+            }}
           />
           <Form.Control.Feedback type="invalid">{errors.confirmPassword?.message}</Form.Control.Feedback>
         </Form.Group>
+
         <Stack direction="horizontal" className="mt-1 justify-content-between">
           <Form.Group controlId="customCheckc1">
             <Form.Check
@@ -161,11 +211,13 @@ export default function AuthRegisterForm({ className, link }) {
             />
           </Form.Group>
         </Stack>
+
         <div className="text-center mt-4">
-          <Button type="submit" className="shadow px-sm-4">
-            Sign up
+          <Button type="submit" className="shadow px-sm-4" disabled={loading}>
+            {loading ? "Signing up..." : "Sign up"}
           </Button>
         </div>
+
         <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
           <h6 className={`f-w-500 mb-0 ${className}`}>Already have an Account?</h6>
           <Link to={link} className="link-primary">

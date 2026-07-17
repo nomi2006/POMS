@@ -9,9 +9,10 @@ import purchaseOrder from './purchase-order';
 import procurement from './procurement';
 import embroidery from './embroidery';
 import qc from './qc';
+import packing from './packing';
 
 const menuItems = {
-  items: [ navigation,purchaseOrder,procurement,formComponents,embroidery,qc,chartsMaps,pages,other]
+  items: [ navigation,purchaseOrder,procurement,formComponents,embroidery,qc,packing,chartsMaps,pages,other]
 };
 
 export default menuItems;

@@ -1,7 +1,4 @@
-// project-imports
 import AuthRegisterForm from 'sections/auth/AuthRegister';
-
-// ===========================|| AUTH - REGISTER PAGE ||=========================== //
 
 export default function RegisterPage() {
   return (

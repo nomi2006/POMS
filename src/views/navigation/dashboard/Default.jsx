@@ -1,14 +1,10 @@
-// react-bootstrap
 import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
-
-// project-imports
 import SalesPerformanceCard from 'components/cards/dashboard/SalesPerformanceCard';
 import SocialStatsCard from 'components/cards/dashboard/SocialStatsCard';
 import StatIndicatorCard from 'components/cards/dashboard/StatIndicatorCard';
 import { UsersMap, EarningChart, RatingCard, RecentUsersCard } from 'sections/dashboard/default';
-// import PurchaseOrderTable from 'sections/purchase-order/PurchaseOrderTable';
 import { useEffect, useState } from "react";
 import { db } from "config/firebase";
 import { collection, getDocs } from "firebase/firestore";
@@ -25,12 +21,10 @@ const salesPerformanceData = [
   { title: 'Yearly Sales', icon: 'ph ph-arrow-up text-success', amount: '$ 8,638.32', progress: { now: 80, className: 'bg-brand-color-1' } }
 ];
 
-
 const statIndicatorData = [
   { icon: 'ph ph-lightbulb-filament', value: '235', label: 'TOTAL IDEAS', iconColor: 'text-success' },
   { icon: 'ph ph-map-pin-line', value: '26', label: 'TOTAL LOCATION', iconColor: 'text-primary' }
 ];
-
 
 const socialStatsData = [
   {
@@ -106,55 +100,98 @@ const socialStatsData = [
   }
 ];
 
-
 export default function DefaultPage() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalClients, setTotalClients] = useState(0);
   const [todayOrders, setTodayOrders] = useState(0);
   const [monthOrders, setMonthOrders] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const loadDashboard = async () => {
-    const orderSnap = await getDocs(collection(db, "purchaseOrders"));
-    const clientSnap = await getDocs(collection(db, "clients"));
+  // ✅ Helper function to safely convert Firebase timestamp to Date
+  const getDateFromTimestamp = (timestamp) => {
+    if (!timestamp) return null;
 
-    const orders = orderSnap.docs.map((doc) => doc.data());
+    // If it's a Firestore Timestamp with toDate() method
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
 
-    setTotalOrders(orderSnap.size);
-    setTotalClients(clientSnap.size);
+    // If it's already a Date object
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
 
-    const today = new Date();
-
-    const todayCount = orders.filter((o) => {
-      if (!o.createdAt) return false;
-
-      const d = o.createdAt.toDate();
-
-      return (
-        d.getDate() === today.getDate() &&
-        d.getMonth() === today.getMonth() &&
-        d.getFullYear() === today.getFullYear()
-      );
-    });
-
-    setTodayOrders(todayCount.length);
-
-    const monthCount = orders.filter((o) => {
-      if (!o.createdAt) return false;
-
-      const d = o.createdAt.toDate();
-
-      return (
-        d.getMonth() === today.getMonth() &&
-        d.getFullYear() === today.getFullYear()
-      );
-    });
-
-    setMonthOrders(monthCount.length);
+    // If it's a string or number
+    return new Date(timestamp);
   };
 
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+
+      const orderSnap = await getDocs(collection(db, "purchaseOrders"));
+      const clientSnap = await getDocs(collection(db, "clients"));
+
+      const orders = orderSnap.docs.map((doc) => {
+        const data = doc.data();
+        let createdAt = data.createdAt;
+
+        if (createdAt && createdAt.toDate && typeof createdAt.toDate === 'function') {
+          createdAt = createdAt.toDate();
+        } else if (createdAt && typeof createdAt === 'string') {
+          createdAt = new Date(createdAt);
+        } else if (createdAt instanceof Date) {
+          createdAt = createdAt;
+        } else {
+          createdAt = null;
+        }
+        return {
+          ...data,
+          createdAt: createdAt
+        };
+      });
+
+      setTotalOrders(orderSnap.size);
+      setTotalClients(clientSnap.size);
+
+      const today = new Date();
+
+      const todayCount = orders.filter((o) => {
+        if (!o.createdAt) return false;
+        return (
+          o.createdAt.getDate() === today.getDate() &&
+          o.createdAt.getMonth() === today.getMonth() &&
+          o.createdAt.getFullYear() === today.getFullYear()
+        );
+      });
+
+      setTodayOrders(todayCount.length);
+
+      const monthCount = orders.filter((o) => {
+        if (!o.createdAt) return false;
+        return (
+          o.createdAt.getMonth() === today.getMonth() &&
+          o.createdAt.getFullYear() === today.getFullYear()
+        );
+      });
+      setMonthOrders(monthCount.length);
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     loadDashboard();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <h5>Loading Dashboard...</h5>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -216,8 +253,6 @@ export default function DefaultPage() {
           </MainCard>
         </Col>
       </Row>
-
-
     </>
   );
 }

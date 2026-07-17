@@ -22,26 +22,6 @@ const purchaseOrder = {
         }
       ]
     },
-    // {
-    //   id: 'yarn-purchase',
-    //   title: 'Yarn Purchase',
-    //   type: 'collapse',
-    //   icon: 'ph ph-yarn', // or 'ph ph-threads' or any icon you prefer
-    //   children: [
-    //     {
-    //       id: 'yarn-purchase-list',
-    //       title: 'Yarn Purchase List',
-    //       type: 'item',
-    //       url: '/yarn-purchase/list'
-    //     },
-    //     {
-    //       id: 'add-yarn-purchase',
-    //       title: 'Add Yarn Purchase',
-    //       type: 'item',
-    //       url: '/yarn-purchase/add'
-    //     }
-    //   ]
-    // },
     {
       id: 'client',
       title: 'Client',

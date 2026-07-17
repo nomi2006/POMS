@@ -1,7 +1,4 @@
-// project-imoports
 import AuthLoginForm from 'sections/auth/AuthLogin';
-
-// ===========================|| AUTH - LOGIN PAGE ||=========================== //
 
 export default function LoginPage() {
   return (
