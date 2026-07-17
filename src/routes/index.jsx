@@ -11,6 +11,7 @@ import YarnPurchaseRoutes from './YarnPurchaseRoutes';
 import AccessoriesPurchaseRoutes from './AccessoriesPurchaseRoutes';
 import DyingKnittingRoutes from './DyingKnittingRoutes'; 
 import EmbroideryRoutes from './EmbroideryRoutes';
+import QCRoutes from './QCRoutes';
 
 const router = createBrowserRouter(
   [
@@ -23,6 +24,7 @@ const router = createBrowserRouter(
     AccessoriesPurchaseRoutes, 
     DyingKnittingRoutes,
     EmbroideryRoutes,
+    QCRoutes,  
     PagesRoutes,
     OtherRoutes,
     ChartMapRoutes
