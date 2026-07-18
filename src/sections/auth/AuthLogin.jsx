@@ -2,31 +2,21 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from "react-toastify";
-
 import { sendPasswordResetEmail } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "config/firebase";
 import { useNavigate } from "react-router-dom";
 
-// react-bootstrap
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Image from 'react-bootstrap/Image';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Stack from 'react-bootstrap/Stack';
 import Modal from 'react-bootstrap/Modal';
-
-// third-party
 import { useForm } from 'react-hook-form';
-
-// project-imports
 import MainCard from 'components/MainCard';
 import { emailSchema, passwordSchema } from 'utils/validationSchema';
-
-// assets
 import DarkLogo from 'assets/images/logo-dark.svg';
-
-// ==============================|| AUTH LOGIN FORM ||============================== //
 
 export default function AuthLoginForm({ className, link }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -51,74 +41,73 @@ export default function AuthLoginForm({ className, link }) {
 
   const onSubmit = async (data) => {
     clearErrors();
+
     try {
       setLoading(true);
-
-      console.log("Auth object:", auth);
-      console.log("Email:", data.email);
-      console.log("Password length:", data.password.length);
-
-      await signInWithEmailAndPassword(auth, data.email, data.password);
-
+      console.log("🔵 Attempting login with:", data.email);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      console.log("✅ Login successful:", userCredential.user.email);
       toast.success("✅ Login Successful!");
       reset();
       navigate("/");
-
     } catch (error) {
-      console.error("Full Error Object:", error);
-      console.error("Error Code:", error.code);
-      console.error("Error Message:", error.message);
-
-      if (error.code === "auth/user-not-found") {
-        setError("email", { type: "manual", message: "No account found" });
-        toast.error("❌ No account found with this email");
-      } else if (error.code === "auth/wrong-password") {
-        setError("password", { type: "manual", message: "Incorrect password" });
-        toast.error("❌ Incorrect password");
-      } else if (error.code === "auth/invalid-email") {
-        setError("email", { type: "manual", message: "Invalid email" });
-        toast.error("❌ Invalid email format");
-      } else if (error.code === "auth/too-many-requests") {
-        toast.error("❌ Too many failed attempts");
-      } else if (error.code === "auth/network-request-failed") {
-        toast.error("❌ Network error. Check connection.");
-      } else if (error.code === "auth/configuration-not-found") {
-        toast.error("❌ Firebase configuration error. Please check your config.");
-      } else if (error.code === "auth/api-key-not-valid") {
-        toast.error("❌ Invalid Firebase API key. Please check your config.");
-      } else if (error.code === "auth/argument-error") {
-        toast.error("❌ Invalid email format. Please check your email.");
-      } else {
-        toast.error(`❌ ${error.message}`);
+      console.log("Error Code:", error.code);
+      switch (error.code) {
+        case "auth/user-not-found":
+          setError("email", {
+            type: "manual",
+            message: "Email is not registered."
+          });
+          toast.error("Email is not registered.");
+          break;
+        case "auth/wrong-password":
+          setError("password", {
+            type: "manual",
+            message: "Incorrect password."
+          });
+          toast.error("Incorrect password.");
+          break;
+        case "auth/invalid-email":
+          setError("email", {
+            type: "manual",
+            message: "Invalid email address."
+          });
+          toast.error("Invalid email address.");
+          break;
+        case "auth/too-many-requests":
+          toast.error("Too many failed attempts. Please try again later.");
+          break;
+        default:
+          toast.error(error.message);
       }
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
+
   const handleForgotPassword = async () => {
+    alert("1");
+
     if (!resetEmail) {
-      toast.error("Please enter your email address");
+      alert("2");
       return;
     }
 
+    alert("3");
+
     try {
-      setResetLoading(true);
+      alert("4");
+
       await sendPasswordResetEmail(auth, resetEmail);
-      toast.success("✅ Password reset email sent! Check your inbox.");
-      setShowForgotModal(false);
-      setResetEmail("");
+
+      alert("5");
+
+      toast.success("Password reset email sent!");
     } catch (error) {
-      console.error("Reset error:", error);
-      if (error.code === "auth/user-not-found") {
-        toast.error("❌ No account found with this email");
-      } else {
-        toast.error(`❌ ${error.message}`);
-      }
-    } finally {
-      setResetLoading(false);
+      alert(error.code);
     }
   };
-
   return (
     <>
       <MainCard className="mb-0">
@@ -130,64 +119,49 @@ export default function AuthLoginForm({ className, link }) {
         <Form onSubmit={handleSubmit(onSubmit)}>
           <h4 className={`text-center f-w-500 mt-4 mb-3 ${className}`}>Login</h4>
 
-          {/* EMAIL FIELD */}
           <Form.Group className="mb-3" controlId="formEmail">
             <Form.Control
               type="email"
               placeholder="Email Address"
-              {...register('email', emailSchema)}
+              {...register("email", emailSchema)}
               isInvalid={!!errors.email}
-              className={className && 'bg-transparent border-white text-white border-opacity-25 '}
-              style={{
-                borderColor: errors.email ? '#dc3545' : '',
-                boxShadow: errors.email ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
-              }}
             />
             <Form.Control.Feedback type="invalid">
               {errors.email?.message}
             </Form.Control.Feedback>
           </Form.Group>
 
-          {/* PASSWORD FIELD */}
           <Form.Group className="mb-3" controlId="formPassword">
-            <InputGroup>
+            <InputGroup hasValidation>
               <Form.Control
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                {...register('password', passwordSchema)}
+                {...register("password", passwordSchema)}
                 isInvalid={!!errors.password}
-                className={className && 'bg-transparent border-white text-white border-opacity-25 '}
-                style={{
-                  borderColor: errors.password ? '#dc3545' : '',
-                  boxShadow: errors.password ? '0 0 0 0.25rem rgba(220, 53, 69, 0.25)' : ''
-                }}
               />
-              <Button onClick={togglePasswordVisibility} variant="outline-secondary">
-                {showPassword ? <i className="ti ti-eye" /> : <i className="ti ti-eye-off" />}
+
+              <Button
+                variant="outline-secondary"
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? (
+                  <i className="ti ti-eye" />
+                ) : (
+                  <i className="ti ti-eye-off" />
+                )}
               </Button>
-            </InputGroup>
-            {errors.password && (
-              <div className="text-danger small mt-1">
-                <i className="bi bi-exclamation-circle me-1"></i>
+
+              <Form.Control.Feedback type="invalid">
                 {errors.password?.message}
-              </div>
-            )}
+              </Form.Control.Feedback>
+            </InputGroup>
           </Form.Group>
 
           <Stack direction="horizontal" className="mt-1 justify-content-between align-items-center">
             <Form.Group controlId="customCheckc1">
-              <Form.Check
-                type="checkbox"
-                label="Remember me?"
-                defaultChecked
-                className={`input-primary ${className ? className : 'text-muted'} `}
-              />
+              <Form.Check type="checkbox" label="Remember me?" defaultChecked />
             </Form.Group>
-            <Button
-              variant="link"
-              className="p-0 text-decoration-none"
-              onClick={() => setShowForgotModal(true)}
-            >
+            <Button variant="link" className="p-0 text-decoration-none" onClick={() => setShowForgotModal(true)}>
               Forgot Password?
             </Button>
           </Stack>
@@ -200,14 +174,11 @@ export default function AuthLoginForm({ className, link }) {
 
           <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
             <h6 className={`f-w-500 mb-0 ${className}`}>Don't have an Account?</h6>
-            <Link to={link} className="link-primary">
-              Create Account
-            </Link>
+            <Link to={link} className="link-primary">Create Account</Link>
           </Stack>
         </Form>
       </MainCard>
 
-      {/* FORGOT PASSWORD MODAL */}
       <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Forgot Password</Modal.Title>
