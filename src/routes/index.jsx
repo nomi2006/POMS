@@ -13,6 +13,8 @@ import DyingKnittingRoutes from './DyingKnittingRoutes';
 import EmbroideryRoutes from './EmbroideryRoutes';
 import QCRoutes from './QCRoutes';
 import PackingRoutes from './PackingRoutes';
+import SettingsRoutes from './SettingsRoutes';
+
 
 const router = createBrowserRouter(
   [
@@ -27,6 +29,7 @@ const router = createBrowserRouter(
     EmbroideryRoutes,
     QCRoutes,  
     PackingRoutes,
+    SettingsRoutes, 
     PagesRoutes,
     OtherRoutes,
     ChartMapRoutes

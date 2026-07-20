@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-
-import { signOut } from "firebase/auth";
-import { auth } from "config/firebase";
+import { signOut, onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 // react-bootstrap
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -10,14 +10,11 @@ import Form from 'react-bootstrap/Form';
 import Image from 'react-bootstrap/Image';
 import Nav from 'react-bootstrap/Nav';
 import Stack from 'react-bootstrap/Stack';
-
 // project-imports
 import MainCard from 'components/MainCard';
 import SimpleBarScroll from 'components/third-party/SimpleBar';
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
-
 import { toast } from "react-toastify";
-
 // assets
 import Img1 from 'assets/images/user/avatar-1.png';
 import Img2 from 'assets/images/user/avatar-2.png';
@@ -26,65 +23,76 @@ import Img4 from 'assets/images/user/avatar-4.png';
 import Img5 from 'assets/images/user/avatar-5.png';
 
 const notifications = [
-  {
-    id: 1,
-    avatar: Img1,
-    time: '2 min ago',
-    title: 'UI/UX Design',
-    description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-    date: 'Today'
-  },
-  {
-    id: 2,
-    avatar: Img2,
-    time: '1 hour ago',
-    title: 'Message',
-    description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-    date: 'Today'
-  },
-  {
-    id: 3,
-    avatar: Img3,
-    time: '2 hour ago',
-    title: 'Forms',
-    description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-    date: 'Yesterday'
-  },
-  {
-    id: 4,
-    avatar: Img4,
-    time: '12 hour ago',
-    title: 'Challenge invitation',
-    description: 'Jonny aber invites you to join the challenge',
-    actions: true,
-    date: 'Yesterday'
-  },
-  {
-    id: 5,
-    avatar: Img5,
-    time: '5 hour ago',
-    title: 'Security',
-    description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-    date: 'Yesterday'
-  }
+  // ... notifications array same rahega
 ];
-
-// =============================|| MAIN LAYOUT - HEADER ||============================== //
 
 export default function Header() {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster?.isDashboardDrawerOpened;
-
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [profilePic, setProfilePic] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        await loadUserData(currentUser.uid);
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const loadUserData = async (uid) => {
+    try {
+      const docRef = doc(db, "users", uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUserData(data);
+        if (data.profilePic) {
+          setProfilePic(data.profilePic);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      toast.success("✅ Logged out successfully!");
       navigate("/login");
     } catch (error) {
       toast.error(error.message);
     }
   };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Datta Able Dashboard',
+          text: 'Check out my dashboard!',
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("✅ Link copied to clipboard!");
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Share error:', error);
+        toast.error("❌ Failed to share");
+      }
+    }
+  };
+
+  const avatarText = userData?.firstName?.charAt(0) || user?.email?.charAt(0) || "U";
 
   return (
     <header className="pc-header">
@@ -177,46 +185,103 @@ export default function Header() {
                 </div>
               </Dropdown.Menu>
             </Dropdown>
+
             <Dropdown className="pc-h-item" align="end">
               <Dropdown.Toggle
+                as="div"
                 className="pc-head-link arrow-none me-0"
-                variant="link"
                 id="user-profile-dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
+                style={{
+                  backgroundColor: 'transparent !important',
+                  border: 'none !important',
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  boxShadow: 'none !important',
+                  outline: 'none !important',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'none !important'
+                }}
               >
-                <i className="ph ph-user-circle" />
+                <div className="d-flex align-items-center gap-2">
+                  {profilePic ? (
+                    <img
+                      src={profilePic}
+                      alt="Profile"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        border: "2px solid #e0e0e0",
+                        pointerEvents: "none",
+                        userSelect: "none"
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                      style={{ width: "32px", height: "32px", fontSize: "14px", fontWeight: "600" }}
+                    >
+                      {avatarText}
+                    </div>
+                  )}
+                  <i className="ph ph-caret-down" style={{ fontSize: "12px", color: "#6c757d" }} />
+                </div>
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown-user-profile pc-h-dropdown p-0 overflow-hidden">
-                <Dropdown.Header className="bg-primary">
+              <Dropdown.Menu className="dropdown-user-profile pc-h-dropdown p-0 overflow-hidden" style={{ minWidth: "220px" }}>
+                <Dropdown.Header className="bg-primary" style={{ padding: "16px 20px" }}>
                   <Stack direction="horizontal" gap={3} className="my-2">
                     <div className="flex-shrink-0">
-                      <Image src={Img2} alt="user-avatar" className="user-avatar wid-35" roundedCircle />
+                      {profilePic ? (
+                        <img
+                          src={profilePic}
+                          alt="Profile"
+                          style={{
+                            width: "45px",
+                            height: "45px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid white"
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center rounded-circle bg-white text-primary"
+                          style={{ width: "45px", height: "45px", fontSize: "18px", fontWeight: "600" }}
+                        >
+                          {avatarText}
+                        </div>
+                      )}
                     </div>
-                    <Stack gap={1}>
-                      <h6 className="text-white mb-0">Carson Darrin 🖖</h6>
-                      <span className="text-white text-opacity-75">carson.darrin@company.io</span>
+                    <Stack gap={0}>
+                      <h6 className="text-white mb-0" style={{ fontSize: "14px", fontWeight: "600" }}>
+                        {userData?.firstName} {userData?.lastName || ""}
+                      </h6>
+                      <span className="text-white text-opacity-75" style={{ fontSize: "12px" }}>
+                        {user?.email}
+                      </span>
                     </Stack>
                   </Stack>
                 </Dropdown.Header>
 
-                <div className="dropdown-body">
+                <div className="dropdown-body" style={{ padding: "8px 0" }}>
                   <div className="profile-notification-scroll position-relative" style={{ maxHeight: 'calc(100vh - 225px)' }}>
-                    <Dropdown.Item as={Link} to="#" className="justify-content-start">
-                      <i className="ph ph-gear me-2" />
+                    <Dropdown.Item as={Link} to="/settings" className="justify-content-start px-4 py-2">
+                      <i className="ph ph-gear me-2" style={{ fontSize: "16px" }} />
                       Settings
                     </Dropdown.Item>
-                    <Dropdown.Item as={Link} to="#" className="justify-content-start">
-                      <i className="ph ph-share-network me-2" />
+                    <Dropdown.Item onClick={handleShare} className="justify-content-start px-4 py-2">
+                      <i className="ph ph-share-network me-2" style={{ fontSize: "16px" }} />
                       Share
                     </Dropdown.Item>
-                    <Dropdown.Item as={Link} to="#" className="justify-content-start">
-                      <i className="ph ph-lock-key me-2" />
-                      Change Password
-                    </Dropdown.Item>
-                    <div className="d-grid my-2">
-                      <Button onClick={handleLogout}>
+                    <div className="d-grid px-3 my-2">
+                      <Button variant="danger" onClick={handleLogout} size="sm">
                         <i className="ph ph-sign-out align-middle me-2" />
                         Logout
                       </Button>

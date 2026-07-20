@@ -33,76 +33,44 @@ export default function AuthLoginForm({ className, link }) {
     clearErrors,
     formState: { errors }
   } = useForm();
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
 
   const onSubmit = async (data) => {
     clearErrors();
-
     try {
       setLoading(true);
-      console.log("🔵 Attempting login with:", data.email);
-      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
-      console.log("✅ Login successful:", userCredential.user.email);
-      toast.success("✅ Login Successful!");
+      const email = data.email.trim();
+      const password = data.password.trim();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      toast.success("Login Successful!");
       reset();
       navigate("/");
     } catch (error) {
-      console.log("Error Code:", error.code);
-      switch (error.code) {
-        case "auth/user-not-found":
-          setError("email", {
-            type: "manual",
-            message: "Email is not registered."
-          });
-          toast.error("Email is not registered.");
-          break;
-        case "auth/wrong-password":
-          setError("password", {
-            type: "manual",
-            message: "Incorrect password."
-          });
-          toast.error("Incorrect password.");
-          break;
-        case "auth/invalid-email":
-          setError("email", {
-            type: "manual",
-            message: "Invalid email address."
-          });
-          toast.error("Invalid email address.");
-          break;
-        case "auth/too-many-requests":
-          toast.error("Too many failed attempts. Please try again later.");
-          break;
-        default:
-          toast.error(error.message);
-      }
-    }
-    finally {
+      console.log("Firebase Error Code:", error.code);
+      console.log("Firebase Error Message:", error.message);
+    } finally {
       setLoading(false);
     }
   };
-
   const handleForgotPassword = async () => {
     alert("1");
-
     if (!resetEmail) {
       alert("2");
       return;
     }
-
     alert("3");
-
     try {
       alert("4");
-
       await sendPasswordResetEmail(auth, resetEmail);
-
       alert("5");
-
       toast.success("Password reset email sent!");
     } catch (error) {
       alert(error.code);
@@ -139,7 +107,6 @@ export default function AuthLoginForm({ className, link }) {
                 {...register("password", passwordSchema)}
                 isInvalid={!!errors.password}
               />
-
               <Button
                 variant="outline-secondary"
                 onClick={togglePasswordVisibility}
@@ -150,7 +117,6 @@ export default function AuthLoginForm({ className, link }) {
                   <i className="ti ti-eye-off" />
                 )}
               </Button>
-
               <Form.Control.Feedback type="invalid">
                 {errors.password?.message}
               </Form.Control.Feedback>
@@ -165,20 +131,17 @@ export default function AuthLoginForm({ className, link }) {
               Forgot Password?
             </Button>
           </Stack>
-
           <div className="text-center mt-4">
             <Button type="submit" className="shadow px-sm-4" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </Button>
           </div>
-
           <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
             <h6 className={`f-w-500 mb-0 ${className}`}>Don't have an Account?</h6>
             <Link to={link} className="link-primary">Create Account</Link>
           </Stack>
         </Form>
       </MainCard>
-
       <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Forgot Password</Modal.Title>
@@ -208,5 +171,4 @@ export default function AuthLoginForm({ className, link }) {
     </>
   );
 }
-
 AuthLoginForm.propTypes = { className: PropTypes.string, link: PropTypes.string };

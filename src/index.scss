@@ -8,3 +8,45 @@
 @import 'assets/scss/style.scss';
 @import 'assets/scss/style-preset.scss';
 @import './global.scss';
+
+/* ✅ PROFILE DROPDOWN HOVER COMPLETELY REMOVE */
+#user-profile-dropdown,
+#user-profile-dropdown *,
+#user-profile-dropdown:hover,
+#user-profile-dropdown:focus,
+#user-profile-dropdown:active,
+#user-profile-dropdown:focus-visible,
+.pc-head-link#user-profile-dropdown,
+.pc-head-link#user-profile-dropdown:hover,
+.pc-head-link#user-profile-dropdown:focus,
+.pc-head-link#user-profile-dropdown:active,
+.dropdown-toggle#user-profile-dropdown,
+.dropdown-toggle#user-profile-dropdown:hover,
+.dropdown-toggle#user-profile-dropdown:focus,
+.dropdown-toggle#user-profile-dropdown:active,
+.pc-header .dropdown-toggle:hover,
+.pc-header .dropdown-toggle:focus,
+.pc-header .dropdown-toggle:active,
+.pc-head-link:hover,
+.pc-head-link:focus,
+.pc-head-link:active {
+    background-color: transparent !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    text-decoration: none !important;
+}
+
+/* ✅ Profile image hover effect remove */
+#user-profile-dropdown img:hover,
+#user-profile-dropdown div:hover {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+}
+
+/* ✅ Hover effect from parent remove */
+.pc-h-item:hover .pc-head-link {
+    background-color: transparent !important;
+}
