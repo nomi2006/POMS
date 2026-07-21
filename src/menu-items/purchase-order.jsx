@@ -22,26 +22,6 @@ const purchaseOrder = {
         }
       ]
     },
-    {
-      id: 'client',
-      title: 'Client',
-      type: 'collapse',
-      icon: 'ph ph-users',
-      children: [
-        {
-          id: 'client-list',
-          title: 'Client List',
-          type: 'item',
-          url: '/client/list'
-        },
-        {
-          id: 'add-client',
-          title: 'Add Client',
-          type: 'item',
-          url: '/client/add'
-        }
-      ]
-    }
   ]
 };
 

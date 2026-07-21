@@ -1,5 +1,3 @@
-// ==============================|| MENU ITEMS - PAGES ||============================== //
-
 const pages = {
   id: 'pages',
   title: 'Pages',
@@ -7,7 +5,7 @@ const pages = {
   children: [
     {
       id: 'authentication',
-      title: 'Authentication',
+      title: 'User Management',
       type: 'collapse',
       icon: 'ph ph-lock-key',
       children: [
@@ -24,6 +22,18 @@ const pages = {
           type: 'item',
           url: '/register',
           target: true
+        },
+        {
+          id: 'user-role',
+          title: 'User Role',
+          type: 'item',
+          url: '/user-role'
+        },
+        {
+          id: 'add-user-manual',
+          title: 'Add User (Manual)',
+          type: 'item',
+          url: '/add-user-manual'
         }
       ]
     }

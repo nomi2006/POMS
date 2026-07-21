@@ -3,6 +3,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 // project-imports
 import router from 'routes';
+import "animate.css";
 
 // ==============================|| APP - THEME, ROUTER, LOCAL ||============================== //
 
