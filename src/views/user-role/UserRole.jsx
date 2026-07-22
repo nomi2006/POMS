@@ -14,8 +14,7 @@ import {
   Form,
   Button,
   Row,
-  Col,
-  Modal
+  Col
 } from "react-bootstrap";
 import Swal from "sweetalert2";
 
@@ -25,14 +24,12 @@ const moduleOptions = [
   "Procurement",
   "Yarn Purchase",
   "Accessories Purchase",
-//   "Dying & Knitting",
   "Knitting",
   "Dying",
   "Embroidery",
   "QC",
   "Packing",
   "Client",
-//   "Settings",
   "Management"
 ];
 
@@ -40,8 +37,6 @@ export default function AddUserRole() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
-//   const [showSuccessModal, setShowSuccessModal] = useState(false);
-//   const [savedRole, setSavedRole] = useState(null);
   const [formData, setFormData] = useState({
     roleId: "",
     roleName: "",
@@ -75,13 +70,23 @@ export default function AddUserRole() {
     }));
   };
 
+  // ✅ Reset form function
+  const resetForm = () => {
+    setFormData({
+      roleId: "",
+      roleName: "",
+      status: "Active"
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.roleName) {
-      toast.error("Please select role name");
+      toast.error("Please enter role name");
       return;
     }
+
     try {
       setLoading(true);
       const roleId = `ROLE-${Date.now()}`;
@@ -90,49 +95,41 @@ export default function AddUserRole() {
         roleId: roleId,
         updatedAt: new Date().toISOString()
       };
-      let savedData;
-if (id) {
-  await updateDoc(doc(db, "userRoles", id), data);
-  await Swal.fire({
-    icon: "success",
-    title: "Role Updated!",
-    text: "User role has been updated successfully.",
-    confirmButtonColor: "#0d6efd",
-    timer: 2000,
-    showConfirmButton: false
-  });
-  navigate("/user-role");
-} else {
-  const docRef = await addDoc(collection(db, "userRoles"), {
-    ...data,
-    createdAt: new Date().toISOString()
-  });
-await Swal.fire({
-  icon: "success",
-  title: "Role Saved!",
-  text: "Your new role has been created successfully.",
-  showClass: {
-    popup: "animate__animated animate__zoomIn"
-  },
-  hideClass: {
-    popup: "animate__animated animate__zoomOut"
-  }
-});
-  navigate("/user-role");
-}
-      setSavedRole(savedData);
-      setShowSuccessModal(true);
+
+      if (id) {
+        await updateDoc(doc(db, "userRoles", id), data);
+        await Swal.fire({
+          icon: "success",
+          title: "Role Updated!",
+          text: "User role has been updated successfully.",
+          confirmButtonColor: "#0d6efd",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        navigate("/user-role");
+      } else {
+        const docRef = await addDoc(collection(db, "userRoles"), {
+          ...data,
+          createdAt: new Date().toISOString()
+        });
+        await Swal.fire({
+          icon: "success",
+          title: "Role Saved!",
+          text: "Your new role has been created successfully.",
+          confirmButtonColor: "#0d6efd",
+          timer: 2000,
+          showConfirmButton: false
+        });
+        // ✅ Reset form after save
+        resetForm();
+        navigate("/user-role");
+      }
     } catch (error) {
       console.error("❌ Error saving:", error);
       toast.error("Failed to save: " + error.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleModalClose = () => {
-    setShowSuccessModal(false);
-    navigate("/user-role");
   };
 
   return (
@@ -149,8 +146,8 @@ await Swal.fire({
             <Card className="shadow-sm border-0">
               <Card.Body className="p-4">
                 <Form onSubmit={handleSubmit}>
-                  {/* ID - Auto Generated */}
-                  <Form.Group className="mb-3">
+                  {/* ❌ ID - HIDDEN (Remove kardiya) */}
+                  {/* <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">ID</Form.Label>
                     <Form.Control
                       type="text"
@@ -159,23 +156,26 @@ await Swal.fire({
                       className="bg-light"
                     />
                     <Form.Text className="text-muted">Auto-generated ID</Form.Text>
-                  </Form.Group>
+                  </Form.Group> */}
 
+                  {/* ✅ ROLE NAME - Text Input */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Role Name <span className="text-danger">*</span></Form.Label>
-                    <Form.Select
+                    <Form.Control
+                      type="text"
                       name="roleName"
                       value={formData.roleName}
                       onChange={handleChange}
+                      placeholder="Enter role name (e.g., Admin, Manager, etc.)"
                       required
-                    >
-                      <option value="">Select Role</option>
-                      {moduleOptions.map((role) => (
-                        <option key={role} value={role}>{role}</option>
-                      ))}
-                    </Form.Select>
+                      style={{ borderRadius: "8px", padding: "12px" }}
+                    />
+                    <Form.Text className="text-muted">
+                      Enter a role name. This will appear in Add User (Manual) dropdown.
+                    </Form.Text>
                   </Form.Group>
 
+                  {/* ✅ STATUS */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Status <span className="text-danger">*</span></Form.Label>
                     <Form.Select
@@ -183,6 +183,7 @@ await Swal.fire({
                       value={formData.status}
                       onChange={handleChange}
                       required
+                      style={{ borderRadius: "8px", padding: "12px" }}
                     >
                       <option value="Active">Active</option>
                       <option value="De-Active">De-Active</option>
@@ -190,10 +191,23 @@ await Swal.fire({
                   </Form.Group>
 
                   <div className="d-flex gap-2 mt-4">
-                    <Button type="submit" variant="primary" disabled={loading}>
+                    <Button 
+                      type="submit" 
+                      variant="primary" 
+                      disabled={loading}
+                      style={{ borderRadius: "10px", padding: "10px 30px" }}
+                    >
                       {loading ? "Saving..." : (id ? "Update Role" : "Save Role")}
                     </Button>
-                    <Button type="button" variant="secondary" onClick={() => navigate("/user-role")}>
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      onClick={() => {
+                        resetForm();
+                        navigate("/user-role");
+                      }}
+                      style={{ borderRadius: "10px", padding: "10px 30px" }}
+                    >
                       Cancel
                     </Button>
                   </div>

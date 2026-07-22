@@ -7,21 +7,13 @@ const pages = {
       id: 'authentication',
       title: 'User Management',
       type: 'collapse',
-      icon: 'ph ph-lock-key',
+      icon: 'ph ph-users',
       children: [
         {
-          id: 'login',
-          title: 'Login',
+          id: 'users-list',
+          title: 'Users List',
           type: 'item',
-          url: '/login',
-          target: true
-        },
-        {
-          id: 'register',
-          title: 'Register',
-          type: 'item',
-          url: '/register',
-          target: true
+          url: '/user-management/list'
         },
         {
           id: 'user-role',

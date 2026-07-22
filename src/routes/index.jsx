@@ -1,6 +1,4 @@
 import { createBrowserRouter } from 'react-router-dom';
-
-// project-imports
 import ChartMapRoutes from './ChartMapRoutes';
 import ComponentsRoutes from './ComponentsRoutes';
 import FormsRoutes from './FormsRoutes';
@@ -16,12 +14,11 @@ import EmbroideryRoutes from './EmbroideryRoutes';
 import QCRoutes from './QCRoutes';
 import PackingRoutes from './PackingRoutes';
 import SettingsRoutes from './SettingsRoutes';
-
-// ✅ UserRole aur AddUserManual ko Loadable ke saath import karein
 import { lazy } from 'react';
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';
 import ProtectedRoute from 'components/ProtectedRoute';
+import UsersList from 'views/user-management/UsersList';
 
 const UserRole = Loadable(
   lazy(() => import('views/user-role/UserRole'))
@@ -30,8 +27,6 @@ const UserRole = Loadable(
 const AddUserManual = Loadable(
   lazy(() => import('views/user-management/AddUserManual'))
 );
-
-// ==============================|| ROUTING RENDER ||============================== //
 
 const router = createBrowserRouter(
   [
@@ -47,7 +42,6 @@ const router = createBrowserRouter(
     QCRoutes,
     PackingRoutes,
     SettingsRoutes,
-    // ✅ UserRole Routes
     {
       path: '/',
       element: (
@@ -67,7 +61,12 @@ const router = createBrowserRouter(
         {
           path: 'add-user-manual',
           element: <AddUserManual />
+        },
+        {
+          path: '/user-management/list',
+          element: <UsersList />
         }
+
       ]
     },
     PagesRoutes,

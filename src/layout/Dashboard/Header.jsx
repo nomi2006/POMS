@@ -34,6 +34,7 @@ export default function Header() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [profilePic, setProfilePic] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -186,22 +187,27 @@ export default function Header() {
               </Dropdown.Menu>
             </Dropdown>
 
-            <Dropdown className="pc-h-item" align="end">
+            {/* ✅ MODERN PROFILE DROPDOWN - FIXED */}
+            <Dropdown
+              className="pc-h-item"
+              align="end"
+              onToggle={(isOpen) => setIsDropdownOpen(isOpen)}
+            >
               <Dropdown.Toggle
                 as="div"
                 className="pc-head-link arrow-none me-0"
                 id="user-profile-dropdown"
                 style={{
-                  backgroundColor: 'transparent !important',
-                  border: 'none !important',
-                  padding: '8px 10px',
-                  borderRadius: '8px',
-                  boxShadow: 'none !important',
-                  outline: 'none !important',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  padding: '6px 10px',
+                  borderRadius: '12px',
+                  boxShadow: 'none',
+                  outline: 'none',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  transition: 'none !important'
+                  transition: 'none'
                 }}
               >
                 <div className="d-flex align-items-center gap-2">
@@ -210,13 +216,14 @@ export default function Header() {
                       src={profilePic}
                       alt="Profile"
                       style={{
-                        width: "32px",
-                        height: "32px",
+                        width: "36px",
+                        height: "36px",
                         borderRadius: "50%",
                         objectFit: "cover",
                         border: "2px solid #e0e0e0",
                         pointerEvents: "none",
-                        userSelect: "none"
+                        userSelect: "none",
+                        display: "block"
                       }}
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -224,75 +231,270 @@ export default function Header() {
                     />
                   ) : (
                     <div
-                      className="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
-                      style={{ width: "32px", height: "32px", fontSize: "14px", fontWeight: "600" }}
+                      className="d-flex align-items-center justify-content-center rounded-circle text-white"
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        fontSize: "15px",
+                        fontWeight: "600",
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        flexShrink: 0
+                      }}
                     >
                       {avatarText}
                     </div>
                   )}
-                  <i className="ph ph-caret-down" style={{ fontSize: "12px", color: "#6c757d" }} />
+                  <i
+                    className="ph ph-caret-down"
+                    style={{
+                      fontSize: "12px",
+                      color: "#6c757d",
+                      transition: "transform 0.3s ease",
+                      transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)"
+                    }}
+                  />
                 </div>
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown-user-profile pc-h-dropdown p-0 overflow-hidden" style={{ minWidth: "220px" }}>
-                <Dropdown.Header className="bg-primary" style={{ padding: "16px 20px" }}>
-                  <Stack direction="horizontal" gap={3} className="my-2">
-                    <div className="flex-shrink-0">
-                      {profilePic ? (
-                        <img
-                          src={profilePic}
-                          alt="Profile"
-                          style={{
-                            width: "45px",
-                            height: "45px",
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                            border: "2px solid white"
-                          }}
-                        />
-                      ) : (
-                        <div
-                          className="d-flex align-items-center justify-content-center rounded-circle bg-white text-primary"
-                          style={{ width: "45px", height: "45px", fontSize: "18px", fontWeight: "600" }}
-                        >
-                          {avatarText}
-                        </div>
-                      )}
-                    </div>
-                    <Stack gap={0}>
-                      <h6 className="text-white mb-0" style={{ fontSize: "14px", fontWeight: "600" }}>
-                        {userData?.firstName} {userData?.lastName || ""}
-                      </h6>
-                      <span className="text-white text-opacity-75" style={{ fontSize: "12px" }}>
-                        {user?.email}
-                      </span>
-                    </Stack>
-                  </Stack>
-                </Dropdown.Header>
-
-                <div className="dropdown-body" style={{ padding: "8px 0" }}>
-                  <div className="profile-notification-scroll position-relative" style={{ maxHeight: 'calc(100vh - 225px)' }}>
-                    <Dropdown.Item as={Link} to="/settings" className="justify-content-start px-4 py-2">
-                      <i className="ph ph-gear me-2" style={{ fontSize: "16px" }} />
-                      Settings
-                    </Dropdown.Item>
-                    <Dropdown.Item onClick={handleShare} className="justify-content-start px-4 py-2">
-                      <i className="ph ph-share-network me-2" style={{ fontSize: "16px" }} />
-                      Share
-                    </Dropdown.Item>
-                    <div className="d-grid px-3 my-2">
-                      <Button variant="danger" onClick={handleLogout} size="sm">
-                        <i className="ph ph-sign-out align-middle me-2" />
-                        Logout
-                      </Button>
-                    </div>
+              <Dropdown.Menu
+                className="dropdown-user-profile pc-h-dropdown p-0 overflow-hidden"
+                style={{
+                  minWidth: "280px",
+                  borderRadius: "18px",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.15), 0 4px 20px rgba(0,0,0,0.05)",
+                  border: "none",
+                  marginTop: "8px",
+                  animation: "slideDown 0.25s ease",
+                  padding: "0"
+                }}
+              >
+                {/* ✅ Gradient Header */}
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    padding: "24px 24px 40px 24px",
+                    position: "relative",
+                    borderRadius: "18px 18px 0 0"
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "-20px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      zIndex: 1
+                    }}
+                  >
+                    {profilePic ? (
+                      <img
+                        src={profilePic}
+                        alt="Profile"
+                        style={{
+                          width: "72px",
+                          height: "72px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          border: "4px solid white",
+                          boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
+                          display: "block"
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "72px",
+                          height: "72px",
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "28px",
+                          fontWeight: "700",
+                          background: "white",
+                          color: "#667eea",
+                          border: "4px solid white",
+                          boxShadow: "0 8px 30px rgba(0,0,0,0.2)"
+                        }}
+                      >
+                        {avatarText}
+                      </div>
+                    )}
                   </div>
+                </div>
+
+                {/* ✅ User Info Section */}
+                <div style={{ padding: "28px 20px 8px 20px", textAlign: "center" }}>
+                  <h6
+                    style={{
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      marginBottom: "2px",
+                      color: "#1a1a2e",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis"
+                    }}
+                  >
+                    {userData?.firstName} {userData?.lastName || ""}
+                  </h6>
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      color: "#6c757d",
+                      fontWeight: "400",
+                      display: "block",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "220px",
+                      margin: "0 auto"
+                    }}
+                  >
+                    {user?.email}
+                  </span>
+                  <div
+                    style={{
+                      display: "inline-block",
+                      marginTop: "6px",
+                      padding: "2px 12px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      color: "#28a745",
+                      background: "#e8f5e9",
+                      borderRadius: "20px"
+                    }}
+                  >
+                    ● Active
+                  </div>
+                </div>
+
+                <div style={{ padding: "8px 12px 16px 12px" }}>
+                  {/* Settings */}
+                  <Dropdown.Item
+                    as={Link}
+                    to="/settings"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "10px 16px",
+                      borderRadius: "10px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#333",
+                      transition: "background 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = "#f0f0f5"}
+                    onMouseLeave={(e) => e.target.style.background = "transparent"}
+                  >
+                    <i className="ph ph-gear" style={{ fontSize: "18px", color: "#6c757d", width: "20px", textAlign: "center" }} />
+                    <span>Settings</span>
+                  </Dropdown.Item>
+
+                  {/* Share */}
+                  <Dropdown.Item
+                    onClick={handleShare}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "10px 16px",
+                      borderRadius: "10px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#333",
+                      transition: "background 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => e.target.style.background = "#f0f0f5"}
+                    onMouseLeave={(e) => e.target.style.background = "transparent"}
+                  >
+                    <i className="ph ph-share-network" style={{ fontSize: "18px", color: "#6c757d", width: "20px", textAlign: "center" }} />
+                    <span>Share</span>
+                  </Dropdown.Item>
+
+                  <div style={{ height: "1px", background: "#e9ecef", margin: "8px 0" }} />
+
+                  {/* ✅ Logout Button */}
+                  <Button
+                    variant="danger"
+                    onClick={handleLogout}
+                    size="sm"
+                    style={{
+                      width: "100%",
+                      borderRadius: "10px",
+                      padding: "10px",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      background: "linear-gradient(135deg, #dc3545, #c82333)",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(220, 53, 69, 0.3)",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      color: "white"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = "scale(1.02)";
+                      e.target.style.boxShadow = "0 6px 20px rgba(220, 53, 69, 0.4)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = "scale(1)";
+                      e.target.style.boxShadow = "0 4px 12px rgba(220, 53, 69, 0.3)";
+                    }}
+                  >
+                    <i className="ph ph-sign-out me-2" />
+                    Logout
+                  </Button>
                 </div>
               </Dropdown.Menu>
             </Dropdown>
           </Nav>
         </div>
       </div>
+
+      {/* ✅ Animation Styles */}
+      <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-12px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        #user-profile-dropdown {
+          transition: none !important;
+          background-color: transparent !important;
+        }
+        #user-profile-dropdown:hover {
+          background-color: transparent !important;
+        }
+        #user-profile-dropdown:focus {
+          background-color: transparent !important;
+        }
+        #user-profile-dropdown:active {
+          background-color: transparent !important;
+        }
+        .dropdown-user-profile .dropdown-item {
+          background-color: transparent !important;
+        }
+        .dropdown-user-profile .dropdown-item:active {
+          background-color: transparent !important;
+        }
+        .dropdown-user-profile .dropdown-item:focus {
+          background-color: transparent !important;
+        }
+        .pc-head-link#user-profile-dropdown:hover {
+          background-color: transparent !important;
+        }
+        @media (max-width: 576px) {
+          .dropdown-user-profile {
+            min-width: 260px !important;
+            right: -10px !important;
+          }
+        }
+      `}</style>
     </header>
   );
 }
