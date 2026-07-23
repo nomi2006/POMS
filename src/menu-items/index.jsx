@@ -14,7 +14,7 @@ import packing from './packing';
 import settings from './settings'; 
 
 const menuItems = {
-  items: [ navigation,purchaseOrder,knitting,dying,procurement,embroidery,qc,packing,chartsMaps,settings,pages]
+  items: [ navigation,purchaseOrder,procurement,knitting,dying,embroidery,qc,packing,chartsMaps,settings,pages]
 };
 
 export default menuItems;

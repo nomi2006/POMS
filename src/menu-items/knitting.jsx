@@ -19,7 +19,13 @@ const knitting = {
           title: 'Knitting Received',
           type: 'item',
           url: '/knitting/received'
-        }
+        },
+        {
+          id: 'knitting-sent-list',
+          title: 'Knitting List',
+          type: 'item',
+          url: '/knitting/sent-list'
+        },
       ]
     }
   ]

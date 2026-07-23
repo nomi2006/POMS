@@ -19,7 +19,13 @@ const dying = {
           title: 'Dying Received',
           type: 'item',
           url: '/dying/received'
-        }
+        },
+        {
+          id: 'dying-sent-list',
+          title: 'Dying List',
+          type: 'item',
+          url: '/dying/sent-list'
+        },
       ]
     }
   ]

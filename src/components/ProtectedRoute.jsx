@@ -17,12 +17,18 @@ export default function ProtectedRoute({ children }) {
   }, []);
 
   if (loading) {
-    return <h3>Loading...</h3>;
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <h5 className="mt-3 text-muted">Loading...</h5>
+      </div>
+    );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  if (user) {
+    return children;
   }
-
-  return children;
+  return <Navigate to="/login" replace />;
 }

@@ -14,13 +14,10 @@ import {
 export default function ViewPurchaseOrder() {
     const { id } = useParams();
     const navigate = useNavigate();
-
     const [order, setOrder] = useState(null);
-
     useEffect(() => {
         loadPurchaseOrder();
     }, [id]);
-
     const loadPurchaseOrder = async () => {
         try {
             const snap = await getDoc(doc(db, "purchaseOrders", id));
@@ -41,10 +38,8 @@ export default function ViewPurchaseOrder() {
             </div>
         );
     }
-
     return (
         <div className="container-fluid p-4">
-
             {/* HEADER */}
             <Card className="shadow-sm border-0 mb-4">
                 <Card.Body className="d-flex justify-content-between align-items-center">
@@ -317,28 +312,6 @@ export default function ViewPurchaseOrder() {
                     </Card>
                 </Col>
             </Row>
-            {/* REMARKS */}
-            <Card className="shadow-sm border-0 mb-4">
-                <Card.Header>
-                    <h5 className="mb-0">
-                        Remarks
-                    </h5>
-                </Card.Header>
-                <Card.Body>
-                    {order.remarks ? (
-                        <p
-                            className="mb-0"
-                            style={{ whiteSpace: "pre-line" }}
-                        >
-                            {order.remarks}
-                        </p>
-                    ) : (
-                        <p className="text-muted mb-0">
-                            No remarks available.
-                        </p>
-                    )}
-                </Card.Body>
-            </Card>
         </div>
     );
 }

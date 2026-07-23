@@ -8,7 +8,9 @@ import ProtectedRoute from 'components/ProtectedRoute';
 const KnittingSent = Loadable(
   lazy(() => import('views/Knitting/KnittingSent'))
 );
-
+const KnittingRSentList = Loadable(
+  lazy(() => import('views/Knitting/KnittingSentList'))
+);
 const KnittingReceived = Loadable(
   lazy(() => import('views/Knitting/KnittingReceived'))
 );
@@ -17,7 +19,9 @@ const KnittingReceived = Loadable(
 const DyingSent = Loadable(
   lazy(() => import('views/Dying/DyingSent'))
 );
-
+const DyingSentList = Loadable(
+  lazy(() => import('views/Dying/DyingSentList'))
+);
 const DyingReceived = Loadable(
   lazy(() => import('views/Dying/DyingReceived'))
 );
@@ -42,6 +46,10 @@ const DyingKnittingRoutes = {
               element: <KnittingSent />
             },
             {
+              path: 'sent-list',
+              element: <KnittingRSentList />
+            },
+            {
               path: 'received',
               element: <KnittingReceived />
             },
@@ -60,9 +68,14 @@ const DyingKnittingRoutes = {
               element: <DyingSent />
             },
             {
+              path: 'sent-list',
+              element: <DyingSentList />
+            },
+            {
               path: 'received',
               element: <DyingReceived />
             },
+
             {
               path: 'edit/:id',
               element: <DyingSent />

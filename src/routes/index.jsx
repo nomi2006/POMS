@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ChartMapRoutes from './ChartMapRoutes';
 import ComponentsRoutes from './ComponentsRoutes';
 import FormsRoutes from './FormsRoutes';
@@ -20,6 +20,8 @@ import DashboardLayout from 'layout/Dashboard';
 import ProtectedRoute from 'components/ProtectedRoute';
 import UsersList from 'views/user-management/UsersList';
 
+import Login from 'views/auth/login/Login';
+
 const UserRole = Loadable(
   lazy(() => import('views/user-role/UserRole'))
 );
@@ -30,6 +32,10 @@ const AddUserManual = Loadable(
 
 const router = createBrowserRouter(
   [
+    {
+      path: '/login',
+      element: <Login />
+    },
     NavigationRoutes,
     ComponentsRoutes,
     FormsRoutes,
@@ -51,6 +57,14 @@ const router = createBrowserRouter(
       ),
       children: [
         {
+          path: '',
+          element: <Navigate to="/dashboard" replace />
+        },
+        {
+          path: 'dashboard',
+          element: <div>Dashboard Page</div>
+        },
+        {
           path: 'user-role',
           element: <UserRole />
         },
@@ -63,10 +77,9 @@ const router = createBrowserRouter(
           element: <AddUserManual />
         },
         {
-          path: '/user-management/list',
+          path: 'user-management/list',
           element: <UsersList />
         }
-
       ]
     },
     PagesRoutes,
