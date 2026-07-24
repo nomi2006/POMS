@@ -12,9 +12,10 @@ import embroidery from './embroidery';
 import qc from './qc';
 import packing from './packing';
 import settings from './settings'; 
+import reports from './reports';
 
 const menuItems = {
-  items: [ navigation,purchaseOrder,procurement,knitting,dying,embroidery,qc,packing,chartsMaps,settings,pages]
+  items: [ navigation,purchaseOrder,procurement,knitting,dying,embroidery,qc,packing,reports,chartsMaps,settings,pages]
 };
 
 export default menuItems;

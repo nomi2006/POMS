@@ -6,7 +6,8 @@ import {
   updateDoc,
   collection,
   doc,
-  getDoc
+  getDoc,
+  getDocs
 } from "firebase/firestore";
 import { db } from "config/firebase";
 import {
@@ -14,7 +15,9 @@ import {
   Form,
   Button,
   Row,
-  Col
+  Col,
+  Badge,
+  Dropdown
 } from "react-bootstrap";
 import Swal from "sweetalert2";
 
@@ -37,6 +40,8 @@ export default function AddUserRole() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [existingRoles, setExistingRoles] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [formData, setFormData] = useState({
     roleId: "",
     roleName: "",
@@ -44,10 +49,24 @@ export default function AddUserRole() {
   });
 
   useEffect(() => {
+    loadExistingRoles();
     if (id) {
       loadRole();
     }
   }, [id]);
+
+  const loadExistingRoles = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "userRoles"));
+      const data = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setExistingRoles(data);
+    } catch (error) {
+      console.error("Error loading existing roles:", error);
+    }
+  };
 
   const loadRole = async () => {
     try {
@@ -70,7 +89,6 @@ export default function AddUserRole() {
     }));
   };
 
-  // ✅ Reset form function
   const resetForm = () => {
     setFormData({
       roleId: "",
@@ -120,7 +138,6 @@ export default function AddUserRole() {
           timer: 2000,
           showConfirmButton: false
         });
-        // ✅ Reset form after save
         resetForm();
         navigate("/user-role");
       }
@@ -146,19 +163,7 @@ export default function AddUserRole() {
             <Card className="shadow-sm border-0">
               <Card.Body className="p-4">
                 <Form onSubmit={handleSubmit}>
-                  {/* ❌ ID - HIDDEN (Remove kardiya) */}
-                  {/* <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">ID</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={`ROLE-${Date.now()}`}
-                      disabled
-                      className="bg-light"
-                    />
-                    <Form.Text className="text-muted">Auto-generated ID</Form.Text>
-                  </Form.Group> */}
-
-                  {/* ✅ ROLE NAME - Text Input */}
+                  {/* ✅ ROLE NAME - Manual Input */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Role Name <span className="text-danger">*</span></Form.Label>
                     <Form.Control
@@ -172,6 +177,70 @@ export default function AddUserRole() {
                     />
                     <Form.Text className="text-muted">
                       Enter a role name. This will appear in Add User (Manual) dropdown.
+                    </Form.Text>
+                  </Form.Group>
+
+                  {/* ✅ EXISTING ROLES - Dropdown */}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">Existing Roles</Form.Label>
+                    <Dropdown 
+                      show={showDropdown} 
+                      onToggle={() => setShowDropdown(!showDropdown)}
+                      className="w-100"
+                    >
+                      <Dropdown.Toggle 
+                        variant="light" 
+                        className="w-100 text-start d-flex justify-content-between align-items-center"
+                        style={{ 
+                          borderRadius: "8px", 
+                          padding: "12px",
+                          border: "1px solid #ced4da",
+                          backgroundColor: "#fff"
+                        }}
+                      >
+                        <span className="text-muted">
+                          {existingRoles.length > 0 ? `${existingRoles.length} roles available` : "No roles found"}
+                        </span>
+                        <i className="ph ph-caret-down"></i>
+                      </Dropdown.Toggle>
+
+                      <Dropdown.Menu className="w-100 p-0" style={{ maxHeight: "250px", overflowY: "auto" }}>
+                        {existingRoles.length > 0 ? (
+                          existingRoles.map((role, index) => (
+                            <Dropdown.Item
+                              key={index}
+                              className="d-flex justify-content-between align-items-center px-3 py-2"
+                              style={{
+                                borderBottom: index < existingRoles.length - 1 ? "1px solid #f0f0f0" : "none"
+                              }}
+                            >
+                              <span>
+                                <i 
+                                  className="ph ph-check-circle me-2" 
+                                  style={{ 
+                                    color: role.status === "Active" ? "#28a745" : "#6c757d",
+                                    fontSize: "16px"
+                                  }}
+                                />
+                                {role.roleName}
+                              </span>
+                              <Badge 
+                                bg={role.status === "Active" ? "success" : "secondary"}
+                                style={{ fontSize: "0.7rem", padding: "4px 10px", borderRadius: "12px" }}
+                              >
+                                {role.status || "Active"}
+                              </Badge>
+                            </Dropdown.Item>
+                          ))
+                        ) : (
+                          <Dropdown.Item className="text-center text-muted py-3">
+                            No roles found
+                          </Dropdown.Item>
+                        )}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                    <Form.Text className="text-muted">
+                      Click to view all existing roles with their status.
                     </Form.Text>
                   </Form.Group>
 
