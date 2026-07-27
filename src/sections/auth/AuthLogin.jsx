@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "config/firebase";
+import { auth, db } from "config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 import Button from 'react-bootstrap/Button';
@@ -35,47 +36,97 @@ export default function AuthLoginForm({ className, link }) {
   } = useForm();
 
   const navigate = useNavigate();
+
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
 
-  const onSubmit = async (data) => {
-    clearErrors();
-    try {
-      setLoading(true);
-      const email = data.email.trim();
-      const password = data.password.trim();
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      toast.success("Login Successful!");
-      reset();
-      navigate("/");
-    } catch (error) {
-      console.log("Firebase Error Code:", error.code);
-      console.log("Firebase Error Message:", error.message);
-    } finally {
-      setLoading(false);
+const onSubmit = async (data) => {
+  clearErrors();
+  try {
+    setLoading(true);
+    const email = data.email.trim();
+    const password = data.password.trim();
+    
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // ✅ Get user role from Firestore
+    const userRef = doc(db, "users", userCredential.user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    console.log("🔵 User Snap exists:", userSnap.exists());  // ✅ DEBUG
+    console.log("🔵 User Data:", userSnap.data());           // ✅ DEBUG
+    
+    let userRole = 'User';
+    if (userSnap.exists()) {
+      userRole = userSnap.data().role || 'User';
     }
-  };
+    
+    console.log("🔵 User Role from Firestore:", userRole);   // ✅ DEBUG
+
+    // ✅ Store role in localStorage
+    let userRole = 'Packing';
+    localStorage.setItem('userRole', userRole);
+    localStorage.setItem('userData', JSON.stringify({
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
+      role: userRole
+    }));
+    
+    console.log("🔵 Role saved in localStorage:", localStorage.getItem('userRole'));  // ✅ DEBUG
+
+    toast.success("Login Successful!");
+    reset();
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.log("Firebase Error Code:", error.code);
+    console.log("Firebase Error Message:", error.message);
+    
+    if (error.code === "auth/user-not-found") {
+      toast.error("No account found with this email");
+    } else if (error.code === "auth/wrong-password") {
+      toast.error("Incorrect password");
+    } else if (error.code === "auth/invalid-email") {
+      toast.error("Invalid email format");
+    } else if (error.code === "auth/too-many-requests") {
+      toast.error("Too many failed attempts. Please try again later.");
+    } else {
+      toast.error(error.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
   const handleForgotPassword = async () => {
-    alert("1");
     if (!resetEmail) {
-      alert("2");
+      toast.error("Please enter your email address");
       return;
     }
-    alert("3");
+
     try {
-      alert("4");
+      setResetLoading(true);
       await sendPasswordResetEmail(auth, resetEmail);
-      alert("5");
       toast.success("Password reset email sent!");
+      setShowForgotModal(false);
+      setResetEmail("");
     } catch (error) {
-      alert(error.code);
+      console.log("Reset error:", error.code);
+      if (error.code === "auth/user-not-found") {
+        toast.error("No account found with this email");
+      } else {
+        toast.error(error.message);
+      }
+    } finally {
+      setResetLoading(false);
     }
   };
+
   return (
     <>
       <MainCard className="mb-0">
@@ -171,4 +222,5 @@ export default function AuthLoginForm({ className, link }) {
     </>
   );
 }
+
 AuthLoginForm.propTypes = { className: PropTypes.string, link: PropTypes.string };

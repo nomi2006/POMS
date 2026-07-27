@@ -1,15 +1,17 @@
 import { RouterProvider } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// project-imports
 import router from 'routes';
 import "animate.css";
-
-// ==============================|| APP - THEME, ROUTER, LOCAL ||============================== //
+import { AuthProvider } from 'context/AuthContext';
 
 function App() {
-  return <RouterProvider router={router} />;
-  <ToastContainer position="top-right" autoClose={3000} />
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+      <ToastContainer position="top-right" autoClose={3000} />
+    </AuthProvider>
+  );
 }
 
 export default App;
