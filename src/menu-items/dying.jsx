@@ -24,7 +24,7 @@ const dying = {
           id: 'dying-sent-list',
           title: 'Dying List',
           type: 'item',
-          url: '/dying/sent-list'
+          url: '/dying/list'
         },
       ]
     }

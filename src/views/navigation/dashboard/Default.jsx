@@ -281,6 +281,4 @@ export default function DefaultPage() {
       </Card>
     </div>
   );
-  // ✅ Dashboard mein console log add karein
-console.log('Dashboard loaded');
 }

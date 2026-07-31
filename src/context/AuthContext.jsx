@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
       if (currentUser) {
         setUser(currentUser);
         try {
+          // ✅ Direct access using UID as document ID
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -45,6 +46,7 @@ export function AuthProvider({ children }) {
     user,
     userRole,
     loading,
+    isAuthenticated: !!user,
     isAdmin: userRole === 'Admin',
     hasRole: (requiredRole) => {
       if (!userRole) return false;

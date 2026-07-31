@@ -13,6 +13,7 @@ import {
   Modal
 } from "react-bootstrap";
 import Swal from "sweetalert2";
+import { deleteUserByUid } from "../../services/userService";
 
 export default function UsersList() {
   const navigate = useNavigate();
@@ -97,10 +98,13 @@ export default function UsersList() {
       cancelButtonText: "Cancel"
     });
 
+    toast.info("Deleting User", user.email);
+
+    console.log("before deleting user", user.uid);
     if (!result.isConfirmed) return;
 
     try {
-      await deleteDoc(doc(db, "users", user.uid));
+      await deleteUserByUid(user.uid);
       toast.success("User deleted successfully!");
       loadUsers();
     } catch (error) {
@@ -130,7 +134,7 @@ export default function UsersList() {
 
     try {
       await sendPasswordResetEmail(auth, editingUser.email);
-      
+
       await Swal.fire({
         icon: "success",
         title: "Password Reset Email Sent!",
@@ -138,7 +142,7 @@ export default function UsersList() {
         confirmButtonColor: "#0d6efd",
         confirmButtonText: "Done"
       });
-      
+
       setShowChangePasswordModal(false);
       toast.success("Password reset email sent successfully!");
     } catch (error) {

@@ -55,11 +55,9 @@ export default function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ If role required and user doesn't have it → Unauthorized
   if (requiredRole) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     const hasAccess = allowedRoles.includes(userRole) || userRole === 'Admin';
-    
     if (!hasAccess) {
       return <Navigate to="/unauthorized" replace />;
     }

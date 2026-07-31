@@ -39,7 +39,7 @@
     "**/*.js",
     "**/*.jsx",
     "src/**/*"
-, "vite.config.mjs"  ],
+  ],
   "references": [
     {
       "path": "./jsconfig.app.json"

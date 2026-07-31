@@ -24,7 +24,7 @@ const knitting = {
           id: 'knitting-sent-list',
           title: 'Knitting List',
           type: 'item',
-          url: '/knitting/sent-list'
+          url: '/knitting/list'
         },
       ]
     }

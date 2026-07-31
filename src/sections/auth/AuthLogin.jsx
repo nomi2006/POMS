@@ -41,67 +41,65 @@ export default function AuthLoginForm({ className, link }) {
     setShowPassword((prevState) => !prevState);
   };
 
-const onSubmit = async (data) => {
-  clearErrors();
-  try {
-    setLoading(true);
-    const email = data.email.trim();
-    const password = data.password.trim();
-    
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+  const onSubmit = async (data) => {
+    clearErrors();
+    try {
+      setLoading(true);
+      const email = data.email.trim();
+      const password = data.password.trim();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    // ✅ Get user role from Firestore
-    const userRef = doc(db, "users", userCredential.user.uid);
-    const userSnap = await getDoc(userRef);
-    
-    console.log("🔵 User Snap exists:", userSnap.exists());  // ✅ DEBUG
-    console.log("🔵 User Data:", userSnap.data());           // ✅ DEBUG
-    
-    let userRole = 'User';
-    if (userSnap.exists()) {
-      userRole = userSnap.data().role || 'User';
-    }
-    
-    console.log("🔵 User Role from Firestore:", userRole);   // ✅ DEBUG
+      console.log("✅ User Logged In:", userCredential.user.uid);
 
-    // ✅ Store role in localStorage
-    let userRole = 'Packing';
-    localStorage.setItem('userRole', userRole);
-    localStorage.setItem('userData', JSON.stringify({
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      role: userRole
-    }));
-    
-    console.log("🔵 Role saved in localStorage:", localStorage.getItem('userRole'));  // ✅ DEBUG
+      // ✅ Try to find user by UID first
+      const userRef = doc(db, "users", userCredential.user.uid);
+      let userSnap = await getDoc(userRef);
+      let userRole = 'User';
+      let userData = {};
 
-    toast.success("Login Successful!");
-    reset();
-    navigate("/dashboard");
+      if (userSnap.exists()) {
+        userData = userSnap.data();
+        userRole = userData.role || 'User';
+        console.log("✅ Found by UID:", userData);
+      } else {
+        // ✅ Fallback: Find by email
+        console.log("⚠️ Not found by UID, searching by email...");
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          userData = querySnapshot.docs[0].data();
+          userRole = userData.role || 'User';
+          console.log("✅ Found by email:", userData);
+        } else {
+          console.log("❌ No user found in Firestore");
+        }
+      }
 
-  } catch (error) {
-    console.log("Firebase Error Code:", error.code);
-    console.log("Firebase Error Message:", error.message);
-    
-    if (error.code === "auth/user-not-found") {
-      toast.error("No account found with this email");
-    } else if (error.code === "auth/wrong-password") {
-      toast.error("Incorrect password");
-    } else if (error.code === "auth/invalid-email") {
-      toast.error("Invalid email format");
-    } else if (error.code === "auth/too-many-requests") {
-      toast.error("Too many failed attempts. Please try again later.");
-    } else {
+      console.log("✅ User Role:", userRole);
+
+      localStorage.setItem('userRole', userRole);
+      localStorage.setItem('userData', JSON.stringify({
+        uid: userCredential.user.uid,
+        email: userCredential.user.email,
+        role: userRole
+      }));
+
+      toast.success("Login Successful!");
+      reset();
+      navigate("/dashboard");
+
+    } catch (error) {
+      console.log("Firebase Error Code:", error.code);
+      console.log("Firebase Error Message:", error.message);
       toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleForgotPassword = async () => {
     if (!resetEmail) {
@@ -117,11 +115,7 @@ const onSubmit = async (data) => {
       setResetEmail("");
     } catch (error) {
       console.log("Reset error:", error.code);
-      if (error.code === "auth/user-not-found") {
-        toast.error("No account found with this email");
-      } else {
-        toast.error(error.message);
-      }
+      toast.error(error.message);
     } finally {
       setResetLoading(false);
     }
@@ -182,17 +176,15 @@ const onSubmit = async (data) => {
               Forgot Password?
             </Button>
           </Stack>
+
           <div className="text-center mt-4">
             <Button type="submit" className="shadow px-sm-4" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </Button>
           </div>
-          <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
-            <h6 className={`f-w-500 mb-0 ${className}`}>Don't have an Account?</h6>
-            <Link to={link} className="link-primary">Create Account</Link>
-          </Stack>
         </Form>
       </MainCard>
+
       <Modal show={showForgotModal} onHide={() => setShowForgotModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Forgot Password</Modal.Title>

@@ -1,6 +1,5 @@
+import React from "react";
 import { lazy } from 'react';
-
-// project-imports
 import Loadable from 'components/Loadable';
 import AuthLayout from 'layout/Auth';
 

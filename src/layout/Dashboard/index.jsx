@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-
+import React from "react";
 // project-imports
 import Drawer from './Drawer';
 import Footer from './Footer';

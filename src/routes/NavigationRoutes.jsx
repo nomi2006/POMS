@@ -1,3 +1,4 @@
+import React from "react";
 import { lazy } from 'react';
 import Loadable from 'components/Loadable';
 import DashboardLayout from 'layout/Dashboard';

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-
+import React from "react";
 // project-imports
 import SimpleBarScroll from 'components/third-party/SimpleBar';
 import Navigation from '../DrawerContent';

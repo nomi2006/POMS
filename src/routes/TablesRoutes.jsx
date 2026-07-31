@@ -1,6 +1,6 @@
+import React from "react";
 import { lazy } from 'react';
 import ProtectedRoute from "components/ProtectedRoute";
-// project-imports
 import DashboardLayout from 'layout/Dashboard';
 import Loadable from 'components/Loadable';
 

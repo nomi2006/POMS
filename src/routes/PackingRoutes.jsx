@@ -1,46 +1,24 @@
-import { lazy } from 'react';
-
-import DashboardLayout from 'layout/Dashboard';
-import Loadable from 'components/Loadable';
-import ProtectedRoute from 'components/ProtectedRoute';
+import { lazy } from "react";
+import Loadable from "components/Loadable";
 
 const PackingSent = Loadable(
-  lazy(() => import('views/Packing/PackingSent'))
+  lazy(() => import("views/Packing/PackingSent"))
 );
 
 const PackingReceived = Loadable(
-  lazy(() => import('views/Packing/PackingReceived'))
+  lazy(() => import("views/Packing/PackingReceived"))
 );
 
 const PackingRoutes = {
-  path: '/',
+  path: "packing",
   children: [
     {
-      path: '/',
-      element: (
-        <ProtectedRoute>
-          <DashboardLayout />
-        </ProtectedRoute>
-      ),
-      children: [
-        {
-          path: 'packing',
-          children: [
-            {
-              path: 'sent',
-              element: <PackingSent />
-            },
-            {
-              path: 'received',
-              element: <PackingReceived />
-            },
-            {
-              path: 'edit/:id',
-              element: <PackingSent />
-            }
-          ]
-        }
-      ]
+      path: "sent",
+      element: <PackingSent />
+    },
+    {
+      path: "received",
+      element: <PackingReceived />
     }
   ]
 };

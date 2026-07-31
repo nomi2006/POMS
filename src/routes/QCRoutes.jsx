@@ -1,5 +1,5 @@
+import React from "react";
 import { lazy } from 'react';
-
 import DashboardLayout from 'layout/Dashboard';
 import Loadable from 'components/Loadable';
 import ProtectedRoute from 'components/ProtectedRoute';

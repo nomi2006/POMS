@@ -1,7 +1,7 @@
 // project-imports
 import { DrawerHeader, DrawerOverlay, useDrawerLogic } from '../common';
 import VerticalDrawerContent from './VerticalDrawerContent';
-
+import React from "react";
 // ==============================|| VERTICAL DRAWER ||============================== //
 
 export const VerticalDrawer = () => {

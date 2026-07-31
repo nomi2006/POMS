@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 
 const moduleOptions = [
   "Admin",
+  "User",
   "Purchase Order",
   "Procurement",
   "Yarn Purchase",
@@ -183,16 +184,16 @@ export default function AddUserRole() {
                   {/* ✅ EXISTING ROLES - Dropdown */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Existing Roles</Form.Label>
-                    <Dropdown 
-                      show={showDropdown} 
+                    <Dropdown
+                      show={showDropdown}
                       onToggle={() => setShowDropdown(!showDropdown)}
                       className="w-100"
                     >
-                      <Dropdown.Toggle 
-                        variant="light" 
+                      <Dropdown.Toggle
+                        variant="light"
                         className="w-100 text-start d-flex justify-content-between align-items-center"
-                        style={{ 
-                          borderRadius: "8px", 
+                        style={{
+                          borderRadius: "8px",
                           padding: "12px",
                           border: "1px solid #ced4da",
                           backgroundColor: "#fff"
@@ -215,16 +216,16 @@ export default function AddUserRole() {
                               }}
                             >
                               <span>
-                                <i 
-                                  className="ph ph-check-circle me-2" 
-                                  style={{ 
+                                <i
+                                  className="ph ph-check-circle me-2"
+                                  style={{
                                     color: role.status === "Active" ? "#28a745" : "#6c757d",
                                     fontSize: "16px"
                                   }}
                                 />
                                 {role.roleName}
                               </span>
-                              <Badge 
+                              <Badge
                                 bg={role.status === "Active" ? "success" : "secondary"}
                                 style={{ fontSize: "0.7rem", padding: "4px 10px", borderRadius: "12px" }}
                               >
@@ -260,17 +261,17 @@ export default function AddUserRole() {
                   </Form.Group>
 
                   <div className="d-flex gap-2 mt-4">
-                    <Button 
-                      type="submit" 
-                      variant="primary" 
+                    <Button
+                      type="submit"
+                      variant="primary"
                       disabled={loading}
                       style={{ borderRadius: "10px", padding: "10px 30px" }}
                     >
                       {loading ? "Saving..." : (id ? "Update Role" : "Save Role")}
                     </Button>
-                    <Button 
-                      type="button" 
-                      variant="secondary" 
+                    <Button
+                      type="button"
+                      variant="secondary"
                       onClick={() => {
                         resetForm();
                         navigate("/user-role");

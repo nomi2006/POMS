@@ -66,7 +66,6 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      // ✅ Clear role from localStorage
       localStorage.removeItem('userRole');
       localStorage.removeItem('userData');
       toast.success("✅ Logged out successfully!");
@@ -75,6 +74,7 @@ export default function Header() {
       toast.error(error.message);
     }
   };
+
   const handleShare = async () => {
     try {
       if (navigator.share) {

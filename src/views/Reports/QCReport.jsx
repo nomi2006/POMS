@@ -156,8 +156,8 @@ export default function QCReport() {
       showCancelButton: true,
       confirmButtonColor: '#0d6efd',
       cancelButtonColor: '#dc3545',
-      confirmButtonText: '✅ Yes, Download',
-      cancelButtonText: '❌ Cancel'
+      confirmButtonText: 'Yes, Download',
+      cancelButtonText: 'Cancel'
     }).then((result) => {
       if (result.isConfirmed) {
         const doc = new jsPDF();
@@ -212,7 +212,7 @@ export default function QCReport() {
     <div className="container-fluid p-4">
       <div className="text-center py-4 border-bottom mb-4">
         <h2 className="fw-bold text-uppercase mb-0" style={{ letterSpacing: "2px", fontSize: "2rem" }}>
-          📊 QC Report
+          QC Report
         </h2>
       </div>
 
