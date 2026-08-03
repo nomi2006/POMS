@@ -7,7 +7,6 @@ import Header from './Header';
 import Breadcrumbs from 'components/Breadcrumbs';
 import NavigationScroll from 'components/NavigationScroll';
 
-// ==============================|| MAIN LAYOUT ||============================== //
 
 export default function MainLayout() {
   return (

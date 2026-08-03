@@ -1,7 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
 
-// project-imports
 import NavItem from './NavItem';
 import NavCollapse from './NavCollapse';
 
@@ -12,7 +11,6 @@ export default function NavGroup(props) {
   const { pathname } = useLocation();
   const [currentItem, setCurrentItem] = useState(item);
 
-  //  Combine items if this is the last grouped item
   useEffect(() => {
     if (lastItem && item.id === lastItemId) {
       const children = remItems.flatMap((ele) => ele.children ?? []);
@@ -22,7 +20,6 @@ export default function NavGroup(props) {
     }
   }, [item, lastItem, lastItemId, remItems]);
 
-  //  Helper: Recursively check if route matches
   const findMatchingChild = useCallback(
     (children, parentId) => {
       children.forEach((child) => {
@@ -36,7 +33,6 @@ export default function NavGroup(props) {
     [pathname, setSelectedID]
   );
 
-  //  On-load selection
   useEffect(() => {
     const children = currentItem.children ?? [];
     children.forEach((child) => {
@@ -48,7 +44,6 @@ export default function NavGroup(props) {
     });
   }, [pathname, currentItem, findMatchingChild, setSelectedID]);
 
-  //  Memoized children render
   const navCollapse = useMemo(() => {
     if (!currentItem.children) return null;
 

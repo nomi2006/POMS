@@ -2,16 +2,13 @@ import PropTypes from 'prop-types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
-// react-bootstrap
 import Badge from 'react-bootstrap/Badge';
 import Collapse from 'react-bootstrap/Collapse';
 import ListGroup from 'react-bootstrap/ListGroup';
 
-// project-imports
 import NavItem from './NavItem';
 import { useGetMenuMaster } from 'api/menu';
 
-// ==============================|| NAVIGATION - COLLAPSE ||============================== //
 
 export default function NavCollapse({ menu, level, parentId, setSelectedItems, selectedItems, setSelectedLevel, selectedLevel }) {
   const { menuMaster } = useGetMenuMaster();
@@ -75,7 +72,6 @@ export default function NavCollapse({ menu, level, parentId, setSelectedItems, s
     [pathname]
   );
 
-  // menu collapse for sub-levels
   useEffect(() => {
     setOpen(false);
     if (!menu.children) return;

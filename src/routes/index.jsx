@@ -127,6 +127,10 @@ const ClientList = Loadable(
 const AddClient = Loadable(
   lazy(() => import('views/client/AddClient'))
 );
+// notifications
+const Notifications = Loadable(
+  lazy(() => import('views/notifications/Notifications'))
+);
 
 // ✅ Reports
 const PurchaseOrderReport = Loadable(lazy(() => import('views/Reports/PurchaseOrderReport')));
@@ -570,6 +574,14 @@ const router = createBrowserRouter(
           element: (
             <ProtectedRoute>
               <Settings />
+            </ProtectedRoute>
+          )
+        },
+        {
+          path: 'notifications',
+          element: (
+            <ProtectedRoute>
+              <Notifications />
             </ProtectedRoute>
           )
         }

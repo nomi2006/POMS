@@ -4,12 +4,15 @@ import "react-toastify/dist/ReactToastify.css";
 import router from 'routes';
 import "animate.css";
 import { AuthProvider } from 'context/AuthContext';
+import { NotificationProvider } from 'context/NotificationContext';
 
 function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
-      <ToastContainer position="top-right" autoClose={3000} />
+      <NotificationProvider>
+        <RouterProvider router={router} />
+        <ToastContainer position="top-right" autoClose={3000} />
+      </NotificationProvider>
     </AuthProvider>
   );
 }

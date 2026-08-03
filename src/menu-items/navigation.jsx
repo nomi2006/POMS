@@ -8,7 +8,7 @@ const navigation = {
       title: 'Dashboard',
       type: 'item',
       icon: 'ph ph-house-line',
-      url: '/'
+      url: '/dashboard'
     }
   ]
 };

@@ -19,8 +19,13 @@ import {
   Button,
   Table
 } from "react-bootstrap";
+import { useNotifications } from 'context/NotificationContext';
+
 
 export default function AddPurchaseOrder() {
+
+  const { addNotification } = useNotifications();
+  const { user } = useAuth();
 
   const navigate = useNavigate();
   const { id } = useParams();
@@ -87,8 +92,6 @@ export default function AddPurchaseOrder() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // ✅ Agar newClientName change ho raha hai toh state update karein
     if (name === "newClientName") {
       setNewClientName(value);
       setFormData(prev => ({
@@ -166,7 +169,6 @@ export default function AddPurchaseOrder() {
         preview: imageUrl
       });
     }
-
     return updatedProducts;
   };
 
@@ -187,15 +189,12 @@ export default function AddPurchaseOrder() {
     try {
       const docRef = doc(db, "purchaseOrders", id);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
         const data = docSnap.data();
-
         setFormData({
           ...formData,
           ...data
         });
-
         if (data.products && data.products.length > 0) {
           setProducts(
             data.products.map((product) => ({
@@ -211,105 +210,112 @@ export default function AddPurchaseOrder() {
       toast.error("Failed to load Purchase Order");
     }
   };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("🔵 Form Submitted!");
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formData.po || formData.po.trim() === "") {
+    toast.error("Please enter PO Number");
+    console.log("❌ Validation Failed: PO Number missing");
+    return;
+  }
+  if (!formData.clientId && (!newClientName || newClientName.trim() === "")) {
+    toast.error("Please select a client or add new client");
+    console.log("❌ Validation Failed: Client missing");
+    return;
+  }
+  const hasValidProduct = products.some(item =>
+    item.style ||
+    item.size12 ||
+    item.size18 ||
+    item.size24 ||
+    item.cost
+  );
+  if (!hasValidProduct) {
+    toast.error("Please add at least one product with valid data");
+    console.log("❌ Validation Failed: No products");
+    return;
+  }
+  console.log("✅ All Validations Passed!");
+  try {
+    const uploadedProducts = await uploadProductImages();
+    let clientName = "";
+    let clientId = formData.clientId;
+    // console.log("Form Data:", formData);
+    // console.log("Client ID:", formData.clientId);
+    // console.log("New Client Name (state):", newClientName);
 
-    // ✅ VALIDATION 1: PO Number Required
-    if (!formData.po || formData.po.trim() === "") {
-      toast.error("Please enter PO Number");
-      console.log("❌ Validation Failed: PO Number missing");
-      return;
+    if (formData.clientId) {
+      const selectedClient = clients.find(
+        (client) => client.id === formData.clientId
+      );
+      clientName = selectedClient?.name || "";
+      console.log("Existing Client Name:", clientName);
     }
+    else if (newClientName && newClientName.trim() !== "") {
+      clientName = newClientName.trim();
 
-    // ✅ VALIDATION 2: Client Required
-    if (!formData.clientId && (!newClientName || newClientName.trim() === "")) {
-      toast.error("Please select a client or add new client");
-      console.log("❌ Validation Failed: Client missing");
-      return;
-    }
-
-    // ✅ VALIDATION 3: At least one product required
-    const hasValidProduct = products.some(item =>
-      item.style ||
-      item.size12 ||
-      item.size18 ||
-      item.size24 ||
-      item.cost
-    );
-
-    if (!hasValidProduct) {
-      toast.error("Please add at least one product with valid data");
-      console.log("❌ Validation Failed: No products");
-      return;
-    }
-
-    console.log("✅ All Validations Passed!");
-
-    try {
-      const uploadedProducts = await uploadProductImages();
-
-      let clientName = "";
-      let clientId = formData.clientId;
-
-      console.log("Form Data:", formData);
-      console.log("Client ID:", formData.clientId);
-      console.log("New Client Name (state):", newClientName);
-
-      // Agar existing client select kiya hai
-      if (formData.clientId) {
-        const selectedClient = clients.find(
-          (client) => client.id === formData.clientId
-        );
-        clientName = selectedClient?.name || "";
-        console.log("Existing Client Name:", clientName);
-      }
-      // Agar new client manually likha hai - state se lein
-      else if (newClientName && newClientName.trim() !== "") {
-        clientName = newClientName.trim();
-
-        // New client ko clients collection mein save karein
-        const newClientRef = await addDoc(collection(db, "clients"), {
-          name: clientName,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        });
-        clientId = newClientRef.id;
-
-        console.log("New Client Added:", clientName, "ID:", clientId);
-        toast.success("New Client Added Successfully!");
-      }
-
-      // FINAL DATA
-      const data = {
-        ...formData,
-        clientId: clientId,
-        clientName: clientName,
-        products: uploadedProducts,
-        totalProducts,
-        totalUnits,
-        grandTotal,
+      const newClientRef = await addDoc(collection(db, "clients"), {
+        name: clientName,
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      };
-
-      console.log("📝 Saving Data:", data);
-
-      if (id) {
-        await updateDoc(doc(db, "purchaseOrders", id), data);
-        toast.success("Purchase Order Updated Successfully");
-      } else {
-        await addDoc(collection(db, "purchaseOrders"), {
-          ...data,
-          createdAt: new Date().toISOString()
-        });
-        toast.success("Purchase Order Added Successfully");
-      }
-      navigate("/purchase-order/list");
-    } catch (error) {
-      console.error("❌ Error:", error);
-      toast.error(error.message);
+      });
+      clientId = newClientRef.id;
+      console.log("New Client Added:", clientName, "ID:", clientId);
+      toast.success("New Client Added Successfully!");
     }
-  };
+
+    // FINAL DATA
+    const data = {
+      ...formData,
+      clientId: clientId,
+      clientName: clientName,
+      products: uploadedProducts,
+      totalProducts,
+      totalUnits,
+      grandTotal,
+      updatedAt: new Date().toISOString()
+    };
+
+    console.log("📝 Saving Data:", data);
+
+    let docRef;
+    if (id) {
+      await updateDoc(doc(db, "purchaseOrders", id), data);
+      toast.success("Purchase Order Updated Successfully");
+      
+      // ✅ Add notification for order update
+      if (user?.uid) {
+        await addNotification(
+          user.uid,
+          'Order Updated',
+          `Order ${formData.po} has been updated successfully.`,
+          'order',
+          `/purchase-order/view/${id}`
+        );
+      }
+    } else {
+      docRef = await addDoc(collection(db, "purchaseOrders"), {
+        ...data,
+        createdAt: new Date().toISOString()
+      });
+      toast.success("Purchase Order Added Successfully");
+      
+      // ✅ Add notification for order creation
+      if (user?.uid) {
+        await addNotification(
+          user.uid,
+          'New Order Created',
+          `Order ${formData.po} has been created successfully.`,
+          'order',
+          `/purchase-order/view/${docRef.id}`
+        );
+      }
+    }
+    navigate("/purchase-order/list");
+  } catch (error) {
+    console.error("❌ Error:", error);
+    toast.error(error.message);
+  }
+};
   return (
     <div className="container-fluid p-4">
       {/* HEADER */}

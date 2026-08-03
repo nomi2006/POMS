@@ -15,10 +15,17 @@ const settings = {
           url: '/settings'
         },
         {
+          id: 'notifications',
+          title: 'Notifications',
+          type: 'item',
+          // icon: 'ph ph-bell',
+          url: '/notifications'
+        },
+        {
           id: 'client',
           title: 'Client',
           type: 'collapse',
-          icon: 'ph ph-users',
+          // icon: 'ph ph-users',
           children: [
             {
               id: 'client-list',

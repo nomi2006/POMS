@@ -9,9 +9,10 @@ import procurement from './procurement';
 import embroidery from './embroidery';
 import qc from './qc';
 import packing from './packing';
-import settings from './settings';  
+import settings from './settings';
 import reports from './reports';
 
+// ✅ Role-based menu mapping
 const roleMenuMap = {
   'Admin': [
     'navigation',
@@ -22,93 +23,97 @@ const roleMenuMap = {
     'embroidery',
     'qc',
     'packing',
-    'settings',  
+    'settings',
     'reports',
     'pages'
   ],
   'User': [
     'navigation',
-    'settings' 
+    'settings'
   ],
   'Purchase Order': [
     'navigation',
     'purchase-order',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Yarn Purchase': [
     'navigation',
     'procurement',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Accessories Purchase': [
     'navigation',
     'procurement',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Knitting': [
     'navigation',
     'knitting',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Dying': [
     'navigation',
     'dying',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Embroidery': [
     'navigation',
     'embroidery',
-    'settings',  
+    'settings',
     'reports'
   ],
   'QC': [
     'navigation',
     'qc',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Packing': [
     'navigation',
     'packing',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Client': [
     'navigation',
-    'settings',  
+    'settings',
     'pages'
   ],
   'Procurement': [
     'navigation',
     'procurement',
-    'settings',  
+    'settings',
     'reports'
   ],
   'Management': [
     'navigation',
-    'settings', 
+    'settings',
     'reports'
   ],
 };
 
+// ✅ Get user role from localStorage (always fresh)
 const getUserRole = () => {
-  return localStorage.getItem('userRole') || 'User';
+  const role = localStorage.getItem('userRole') || 'User';
+  console.log('🔵 Current User Role:', role);
+  return role;
 };
 
+// ✅ Filter menu items based on role
 const filterMenuItems = (items) => {
-  const role = getUserRole();
+  const role = getUserRole(); // ✅ Always fresh
   const allowedKeys = roleMenuMap[role] || ['navigation', 'settings'];
   
-  console.log('🔵 User Role:', role);
   console.log('🔵 Allowed Keys:', allowedKeys);
   
   return items.filter((item) => {
     if (allowedKeys.includes(item.id)) {
+      console.log('✅ Allowed:', item.id);
       return true;
     }
     if (item.children) {
@@ -121,6 +126,7 @@ const filterMenuItems = (items) => {
   });
 };
 
+// ✅ All menu items
 const allMenuItems = [
   navigation,
   purchaseOrder,
@@ -130,14 +136,17 @@ const allMenuItems = [
   embroidery,
   qc,
   packing,
+  settings,
   reports,
-  settings,  
   chartsMaps,
   pages
 ];
 
+// ✅ Apply role-based filtering
 const menuItems = {
   items: filterMenuItems(allMenuItems)
 };
+
+console.log('🔵 Final Menu Items:', menuItems.items.map(i => i.id));
 
 export default menuItems;

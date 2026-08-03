@@ -13,7 +13,7 @@ const procurement = {
           id: 'yarn-purchase',
           title: 'Yarn Purchase',
           type: 'collapse',
-          icon: 'ph ph-yarn',
+          // icon: 'ph ph-yarn',
           children: [
             {
               id: 'yarn-purchase-list',
@@ -34,7 +34,7 @@ const procurement = {
           id: 'accessories-purchase',
           title: 'Accessories Purchase',   
           type: 'collapse',
-          icon: 'ph ph-package',
+          // icon: 'ph ph-package',
           children: [
             {
               id: 'accessories-purchase-list',

@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// project-imports
 import { handlerDrawerOpen, useGetMenuMaster } from 'api/menu';
 
-// ==============================|| COMMON DRAWER LOGIC HOOK ||============================== //
 
 export const useDrawerLogic = () => {
   const { menuMaster } = useGetMenuMaster();
@@ -14,7 +12,6 @@ export const useDrawerLogic = () => {
 
   const overlayRef = useRef(null);
 
-  // Handle Resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 1024);
@@ -24,7 +21,6 @@ export const useDrawerLogic = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  //  Close Drawer on Outside Click (only for mobile)
   const handleClickOutside = useCallback((event) => {
     if (overlayRef.current?.contains(event.target)) {
       handlerDrawerOpen(false);

@@ -1,15 +1,13 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import React from "react";
-// react-bootstrap
+
 import ListGroup from 'react-bootstrap/ListGroup';
 
-// project imports
 import NavItem from './NavItem';
 import NavGroup from './NavGroup';
 import menuItems from 'menu-items';
 
-// ==============================|| DRAWER CONTENT ||============================== //
 
 export default function Navigation({ selectedItems, setSelectedItems, setSelectTab }) {
   const [selectedID, setSelectedID] = useState('');

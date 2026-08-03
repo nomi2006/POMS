@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import { useLocation, matchPath, Link } from 'react-router-dom';
 
-// project-imports
 import { handlerDrawerOpen } from 'api/menu';
 
 
@@ -14,7 +13,6 @@ export default function NavItem({ item }) {
   const isMobile = window.innerWidth <= 1024;
 
   const handleClick = () => {
-    // close drawer on mobile
     if (isMobile) handlerDrawerOpen(false);
   };
 

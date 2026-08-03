@@ -55,32 +55,18 @@ export default function AuthLoginForm({ className, link }) {
 
       console.log("✅ User Logged In:", userCredential.user.uid);
 
-      // ✅ Try to find user by UID first
+      // ✅ Get user role from Firestore
       const userRef = doc(db, "users", userCredential.user.uid);
-      let userSnap = await getDoc(userRef);
+      const userSnap = await getDoc(userRef);
+      
       let userRole = 'User';
-      let userData = {};
-
       if (userSnap.exists()) {
-        userData = userSnap.data();
-        userRole = userData.role || 'User';
-        console.log("✅ Found by UID:", userData);
-      } else {
-        // ✅ Fallback: Find by email
-        console.log("⚠️ Not found by UID, searching by email...");
-        const q = query(collection(db, "users"), where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          userData = querySnapshot.docs[0].data();
-          userRole = userData.role || 'User';
-          console.log("✅ Found by email:", userData);
-        } else {
-          console.log("❌ No user found in Firestore");
-        }
+        userRole = userSnap.data().role || 'User';
       }
 
-      console.log("✅ User Role:", userRole);
+      console.log("✅ User Role from Firestore:", userRole);
 
+      // ✅ Save role in localStorage
       localStorage.setItem('userRole', userRole);
       localStorage.setItem('userData', JSON.stringify({
         uid: userCredential.user.uid,
@@ -90,12 +76,25 @@ export default function AuthLoginForm({ className, link }) {
 
       toast.success("Login Successful!");
       reset();
-      navigate("/dashboard");
+      
+      // ✅ Force refresh to update sidebar immediately
+      window.location.href = "/dashboard";
 
     } catch (error) {
       console.log("Firebase Error Code:", error.code);
       console.log("Firebase Error Message:", error.message);
-      toast.error(error.message);
+      
+      if (error.code === "auth/user-not-found") {
+        toast.error("No account found with this email");
+      } else if (error.code === "auth/wrong-password") {
+        toast.error("Incorrect password");
+      } else if (error.code === "auth/invalid-email") {
+        toast.error("Invalid email format");
+      } else if (error.code === "auth/too-many-requests") {
+        toast.error("Too many failed attempts. Please try again later.");
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -182,6 +181,11 @@ export default function AuthLoginForm({ className, link }) {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </div>
+
+          <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
+            <h6 className={`f-w-500 mb-0 ${className}`}>Don't have an Account?</h6>
+            <Link to={link} className="link-primary">Create Account</Link>
+          </Stack>
         </Form>
       </MainCard>
 
