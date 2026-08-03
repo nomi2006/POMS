@@ -181,11 +181,6 @@ export default function AuthLoginForm({ className, link }) {
               {loading ? "Logging in..." : "Login"}
             </Button>
           </div>
-
-          <Stack direction="horizontal" className="justify-content-between align-items-end mt-4">
-            <h6 className={`f-w-500 mb-0 ${className}`}>Don't have an Account?</h6>
-            <Link to={link} className="link-primary">Create Account</Link>
-          </Stack>
         </Form>
       </MainCard>
 
